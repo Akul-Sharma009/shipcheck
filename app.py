@@ -64,7 +64,7 @@ def check(hackathon_url: str, repo_url: str, pasted: str, video_url: str, descri
         st.session_state.notice = f"error:{e}"
         return
     except Exception:
-        st.session_state.notice = "error:Couldn't reach GitHub or GitLab. Check the repo URL and try again."
+        st.session_state.notice = "error:Couldn't reach GitHub, GitLab or Bitbucket. Check the repo URL and try again."
         return
 
     rkey = guard.rules_key(hackathon_url, pasted)
@@ -253,7 +253,7 @@ st.markdown("**Pre-judge your hackathon submission before the judges do.** Paste
 
 with st.form("check"):
     hackathon_url = st.text_input("Hackathon page (Devpost)", DEFAULT_HACKATHON)
-    repo_url = st.text_input("Your GitHub or GitLab repo", placeholder="https://github.com/you/your-project")
+    repo_url = st.text_input("Your GitHub, GitLab or Bitbucket repo", placeholder="https://github.com/you/your-project")
     with st.expander("Also check your Devpost submission (video link, write-up)"):
         video_url = st.text_input("YouTube demo video", placeholder="https://youtu.be/…")
         description = st.text_area("Devpost write-up", height=150,
@@ -265,7 +265,7 @@ with st.form("check"):
 
 if submitted:
     if not repo_url.strip():
-        st.session_state.notice = "error:Enter your GitHub or GitLab repo URL."
+        st.session_state.notice = "error:Enter your GitHub, GitLab or Bitbucket repo URL."
     else:
         check(hackathon_url.strip() or DEFAULT_HACKATHON, repo_url.strip(), pasted, video_url, description)
 

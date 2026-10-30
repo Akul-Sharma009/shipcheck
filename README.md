@@ -2,7 +2,7 @@
 
 **Pre-judge your hackathon submission before the judges do.**
 
-Paste a hackathon URL and your GitHub or GitLab repo. In about 30 seconds ShipCheck gives you:
+Paste a hackathon URL and your GitHub, GitLab or Bitbucket repo. In about 30 seconds ShipCheck gives you:
 - a pass/fail verdict on every submission requirement in *that* hackathon's rules, each citing the file and line it's based on
 - a one-line fix under every failure
 - a ready-to-paste README section for README failures
@@ -178,7 +178,7 @@ The keyword check's false pass was a real entry with a truncated MIT license. Gi
 
 ## Limitations
 
-- **Public GitHub and GitLab.com repos, and Devpost hackathons, only.** Self-hosted GitLab is not supported. Other hackathon platforms work if you paste the rules text.
+- **Public GitHub, GitLab.com and Bitbucket Cloud repos, and Devpost hackathons, only.** Self-hosted GitLab is not supported. Bitbucket has no license detection, so ShipCheck matches the root LICENSE text against common licenses itself. Other hackathon platforms work if you paste the rules text.
 - **AI verdicts can be wrong.** They are constrained to cite evidence, but treat "unclear" as "go look". The evaluation above is small (28 labels).
 - **Usage detection reads model IDs and endpoints, not behaviour.** A repo that sets its model only through an environment variable, with no ID in any file ShipCheck reads, gets "unclear" for model usage rather than a pass.
 - **The GitHub Action hasn't run on a real runner yet.** The CLI it wraps is tested; the composite action itself is not.
@@ -195,7 +195,7 @@ shipcheck/
   config.py             secrets, model IDs, limits
   llm.py                Token Factory client, call_json() with validation + retry
   rules.py              Tavily Extract → clean → Super → Rules
-  repo.py               GitHub + GitLab ingestion, file selection, deterministic checks
+  repo.py               GitHub + GitLab + Bitbucket ingestion, file selection, deterministic checks
   evidence.py           Nano per-file evidence (parallel) + grounding, path:line grep
   judge.py              Super verdicts, deterministic overrides, false-pass guard, code-usage check
   submission.py         YouTube video facts, Devpost write-up verdicts

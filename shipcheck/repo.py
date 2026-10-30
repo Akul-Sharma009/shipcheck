@@ -18,6 +18,8 @@ PER_FILE_CHARS = 12_000  # evidence.py truncates each file to this
 RAW = "https://raw.githubusercontent.com"
 GL_API = "https://gitlab.com/api/v4"
 GL_TREE_CAP = 2000
+BB_API = "https://api.bitbucket.org/2.0"
+BB_TREE_CAP = 2000
 
 
 class RepoError(Exception):
@@ -48,9 +50,25 @@ def _gl_parse(url: str) -> Tuple[str, str]:
     return "/".join(parts[:-1]), parts[-1]
 
 
+def is_bitbucket(url: str) -> bool:
+    return bool(re.search(r"(?:^|//|@)(?:www\.)?bitbucket\.org[/:]", url.strip(), re.I))
+
+
+def _bb_parse(url: str) -> Tuple[str, str]:
+    """bitbucket.org/workspace/repo[/...] -> ("workspace", "repo")."""
+    m = re.search(r"bitbucket\.org[/:](.+)$", url.strip(), re.I)
+    path = re.split(r"[?#]", m.group(1) if m else "")[0].rstrip("/")
+    parts = [x for x in path.split("/") if x]
+    if len(parts) < 2 or not all(re.fullmatch(r"[\w.-]+", x) for x in parts[:2]):
+        raise RepoError(f"Not a Bitbucket repo URL: {url}")
+    return parts[0], re.sub(r"\.git$", "", parts[1])
+
+
 def parse_repo_url(url: str) -> Tuple[str, str]:
     if is_gitlab(url):
         return _gl_parse(url)
+    if is_bitbucket(url):
+        return _bb_parse(url)
     m = re.search(r"(?:github\.com[/:])?([\w.-]+)/([\w.-]+?)(?:\.git)?(?:/.*)?$", url.strip().rstrip("/"))
     if not m or m.group(1) in ("http:", "https:"):
         raise RepoError(f"Not a GitHub repo URL: {url}")
@@ -123,6 +141,8 @@ def _rank(path: str) -> int:
 def _fetch_raw(s: Optional[requests.Session], full_name, sha: str, path: str) -> Optional[str]:
     if isinstance(full_name, int):  # GitLab project id
         return _gl_raw(full_name, sha, path)
+    if isinstance(full_name, tuple):  # ("bb", "workspace/repo")
+        return _bb_raw(full_name[1], sha, path)
     try:
         r = requests.get(f"{RAW}/{full_name}/{sha}/{path}", timeout=20)  # public files: no token needed
         if r.status_code != 200:
@@ -279,11 +299,141 @@ def _gl_commits_in_window(full_name: str, start: datetime, end: datetime) -> int
     return len(r.json()) if r.status_code == 200 else 0
 
 
+# ---------- Bitbucket Cloud (REST 2.0, unauthenticated, public repos only) ----------
+def _bb_get(path: str, **params) -> requests.Response:
+    r = requests.get(path if path.startswith("http") else BB_API + path, params=params or None, timeout=20)
+    if r.status_code == 429:
+        raise RepoError("Bitbucket rate limit reached; try again later")
+    return r
+
+
+def _bb_repo(owner: str, name: str) -> Dict:
+    r = _bb_get(f"/repositories/{owner}/{name}")
+    if r.status_code in (401, 403, 404):
+        raise RepoError(f"Repo {owner}/{name} not found (or private)")
+    r.raise_for_status()
+    repo = r.json()
+    if repo.get("is_private"):
+        raise RepoError(f"{repo.get('full_name', owner + '/' + name)} is private. Judges can't see it either: "
+                        "make it public, then rerun.")
+    return repo
+
+
+def _bb_commit(full_name: str, ref: str) -> Dict:
+    c = _bb_get(f"/repositories/{full_name}/commit/{quote(ref, safe='')}")
+    if c.status_code == 404:
+        raise RepoError(f"Ref {ref} not found in {full_name}")
+    c.raise_for_status()
+    return c.json()
+
+
+def _bb_head(repo_url: str) -> Tuple[str, str]:
+    owner, name = parse_repo_url(repo_url)
+    repo = _bb_repo(owner, name)
+    branch = (repo.get("mainbranch") or {}).get("name")
+    if not branch:
+        raise RepoError(f"{repo['full_name']} has no commits yet")
+    return repo["full_name"], _bb_commit(repo["full_name"], branch)["hash"]
+
+
+def _bb_tree(full_name: str, sha: str) -> List[Dict]:
+    """Recursive tree normalised to GitHub's shape ({path, type blob|tree, size})."""
+    out: List[Dict] = []
+    url: Optional[str] = f"{BB_API}/repositories/{full_name}/src/{sha}/"
+    params: Dict = {"max_depth": 10, "pagelen": 100}
+    while url and len(out) < BB_TREE_CAP:
+        r = _bb_get(url, **params)
+        r.raise_for_status()
+        j = r.json()
+        out += [{"path": e["path"], "type": "blob" if e.get("type") == "commit_file" else "tree",
+                 "size": e.get("size", 0) or 0} for e in j.get("values", [])]
+        url, params = j.get("next"), {}
+    return out[:BB_TREE_CAP]
+
+
+def _bb_raw(full_name: str, sha: str, path: str) -> Optional[str]:
+    try:
+        r = requests.get(f"{BB_API}/repositories/{full_name}/src/{sha}/{quote(path)}", timeout=20)
+        return r.content.decode("utf-8", errors="replace") if r.status_code == 200 else None
+    except requests.RequestException:
+        return None
+
+
+def detect_license(text: str) -> str:
+    """Match the head of a license file against well-known texts. Returns an SPDX id or "NOASSERTION"."""
+    t = re.sub(r"\s+", " ", text[:1500]).lower()
+    if "mozilla public license" in t and "version 2.0" in t:
+        return "MPL-2.0"
+    if "apache license" in t and "version 2.0" in t:
+        return "Apache-2.0"
+    if "gnu affero general public license" in t and "version 3" in t:
+        return "AGPL-3.0"
+    if "gnu lesser general public license" in t:
+        return "LGPL-3.0" if "version 3" in t else "LGPL-2.1" if "version 2.1" in t else "NOASSERTION"
+    if "gnu general public license" in t:
+        return "GPL-3.0" if "version 3" in t else "GPL-2.0" if "version 2" in t else "NOASSERTION"
+    if "mit license" in t[:200] and "permission is hereby granted, free of charge" in t:
+        return "MIT"
+    if "redistribution and use in source and binary forms" in t:
+        return "BSD-3-Clause" if "neither the name" in t else "BSD-2-Clause"
+    if "this is free and unencumbered software" in t:
+        return "Unlicense"
+    return "NOASSERTION"
+
+
+def _bb_ingest(repo_url: str, ref: Optional[str]) -> Tuple[RepoFacts, str, Dict[str, str]]:
+    owner, name = parse_repo_url(repo_url)
+    repo = _bb_repo(owner, name)
+    full_name = repo["full_name"]
+    branch = (repo.get("mainbranch") or {}).get("name")
+    if not branch:
+        raise RepoError(f"{full_name} has no commits yet")
+    head_c = _bb_commit(full_name, ref or branch)
+    sha = head_c["hash"]
+    tree = _bb_tree(full_name, sha)
+
+    readme_path = _gl_root_file(tree, r"readme(\.\w+)?$")
+    readme = (_bb_raw(full_name, sha, readme_path) or "") if readme_path else ""
+    if not readme:
+        readme_path = None
+
+    license_file = _gl_root_file(tree, r"(un)?licen[cs]e|copying")
+    spdx = detect_license(_bb_raw(full_name, sha, license_file) or "") if license_file else None
+
+    files = select_files(None, ("bb", full_name), sha, tree, readme_path)
+    html = ((repo.get("links") or {}).get("html") or {}).get("href") or f"https://bitbucket.org/{full_name}"
+    facts = RepoFacts(
+        full_name=full_name, url=html, is_public=True, default_branch=branch, head_sha=sha, license_spdx=spdx,
+        license_file=license_file, has_readme=bool(readme), readme_path=readme_path,
+        readme_has_setup=readme_has_setup(readme), last_commit_iso=head_c.get("date"),
+        files_in_tree=sum(1 for x in tree if x["type"] == "blob"), files_considered=len(files) + bool(readme),
+        license_file_present=license_file is not None)
+    return facts, readme, files
+
+
+def _bb_commits_in_window(full_name: str, start: datetime, end: datetime) -> int:
+    r = _bb_get(f"/repositories/{full_name}")
+    branch = ((r.json().get("mainbranch") or {}).get("name") or "") if r.status_code == 200 else ""
+    if not branch:
+        return 0
+    r = _bb_get(f"/repositories/{full_name}/commits/{quote(branch, safe='')}", pagelen=100)
+    if r.status_code != 200:
+        return 0
+    n = 0
+    for c in r.json().get("values", []):
+        d = _parse_dt(c.get("date"))
+        if d and start <= d <= end:
+            n += 1
+    return n
+
+
 # ---------- ingestion ----------
 def head(repo_url: str) -> Tuple[str, str]:
     """(full_name, head commit SHA) of the default branch: 2 cheap API calls, used as the cache key."""
     if is_gitlab(repo_url):
         return _gl_head(repo_url)
+    if is_bitbucket(repo_url):
+        return _bb_head(repo_url)
     owner, name = parse_repo_url(repo_url)
     s = _session()
     r = _get(s, f"/repos/{owner}/{name}")
@@ -303,6 +453,8 @@ def ingest(repo_url: str, ref: Optional[str] = None) -> Tuple[RepoFacts, str, Di
     head). Private repos are not read."""
     if is_gitlab(repo_url):
         return _gl_ingest(repo_url, ref)
+    if is_bitbucket(repo_url):
+        return _bb_ingest(repo_url, ref)
     owner, name = parse_repo_url(repo_url)
     s = _session()
     r = _get(s, f"/repos/{owner}/{name}")
@@ -364,6 +516,8 @@ def commits_in_window(full_name: str, start: datetime, end: datetime, url: str =
     """Number of commits on the default branch in [start, end], capped at 100."""
     if is_gitlab(url):
         return _gl_commits_in_window(full_name, start, end)
+    if is_bitbucket(url):
+        return _bb_commits_in_window(full_name, start, end)
     r = _get(_session(), f"/repos/{full_name}/commits", since=start.isoformat(), until=end.isoformat(),
              per_page=100)
     return len(r.json()) if r.status_code == 200 else 0
@@ -371,12 +525,28 @@ def commits_in_window(full_name: str, start: datetime, end: datetime, url: str =
 
 # ---------- deterministic checks ----------
 def deterministic_checks(facts: RepoFacts, rules: Optional[Rules] = None) -> List[Check]:
-    host = "GitLab" if is_gitlab(facts.url) else "GitHub"
+    bb = is_bitbucket(facts.url)
+    host = "Bitbucket" if bb else "GitLab" if is_gitlab(facts.url) else "GitHub"
     checks = [Check(id="D1", name="Repository is public", status="pass" if facts.is_public else "fail",
                     evidence=[f"{host} reports {facts.full_name} as {'public' if facts.is_public else 'private'}"],
                     fix=None if facts.is_public else "Settings → General → Danger Zone → Change visibility → Public.")]
 
-    if facts.license_spdx and facts.license_spdx != "NOASSERTION":
+    if bb:  # Bitbucket has no license detection: we match the root license file's text ourselves.
+        d2 = "Open-source license detected"
+        if facts.license_spdx and facts.license_spdx != "NOASSERTION":
+            checks.append(Check(id="D2", name=d2, status="pass",
+                                evidence=[f"License file check: {facts.license_spdx} ({facts.license_file})"]))
+        elif facts.license_spdx == "NOASSERTION":
+            checks.append(Check(id="D2", name=d2, status="fail",
+                                evidence=[f"{facts.license_file} exists, but it doesn't match a standard license text"],
+                                fix=f"Replace {facts.license_file} with an unmodified license template "
+                                    "(e.g. the MIT text from choosealicense.com)."))
+        else:
+            checks.append(Check(id="D2", name=d2, status="fail",
+                                evidence=["No LICENSE file found at the repo root"],
+                                fix="Add a LICENSE file at the repo root with an open-source license text "
+                                    "(e.g. MIT from choosealicense.com)."))
+    elif facts.license_spdx and facts.license_spdx != "NOASSERTION":
         checks.append(Check(id="D2", name=f"Open-source license detected by {host}", status="pass",
                             evidence=[f"{host} license detection: {facts.license_spdx} ({facts.license_file})"]))
     elif facts.license_spdx == "NOASSERTION":
