@@ -172,9 +172,12 @@ def render(report: Report) -> None:
 
     if fixes:
         st.markdown("#### Fix these first")
+        why = {v.requirement_id: v.evidence for v in report.verdicts} | {c.id: c.evidence for c in report.checks}
         for status, ident, problem, fix in fixes:
             with st.container(border=True):
                 st.markdown(f"{BADGE[status]} &nbsp; **{ident}** {md(problem)}")
+                if why.get(ident):
+                    st.caption("Evidence: " + code_list(why[ident][:2]))
                 if ident in missed:
                     st.caption(":violet[A keyword check would have said PASS here.]")
                 if fix:
