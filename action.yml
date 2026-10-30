@@ -1,0 +1,67 @@
+name: ShipCheck
+description: Judge this repo against a hackathon's rules with NVIDIA Nemotron on Nebius Token Factory.
+inputs:
+  hackathon-url:
+    description: Hackathon page (Devpost URL).
+    required: true
+  repo:
+    description: Repo URL to check.
+    default: ${{ github.server_url }}/${{ github.repository }}
+  ref:
+    description: Commit SHA to check.
+    default: ${{ github.sha }}
+  fail-on:
+    description: "Fail the job on: fail (default), unclear (fail or unclear), never."
+    default: fail
+  nebius-api-key:
+    description: Nebius Token Factory API key.
+    required: true
+  tavily-api-key:
+    description: Tavily key. Only needed for hackathons whose rules are not bundled in the action.
+    required: false
+    default: ""
+  github-token:
+    description: Token used to read the repo.
+    default: ${{ github.token }}
+outputs:
+  pass:
+    description: Number of requirements that pass.
+    value: ${{ steps.check.outputs.pass }}
+  fail:
+    description: Number of requirements that fail.
+    value: ${{ steps.check.outputs.fail }}
+  unclear:
+    description: Number of requirements that are unclear.
+    value: ${{ steps.check.outputs.unclear }}
+  report-path:
+    description: Path of the Markdown report on the runner.
+    value: ${{ steps.check.outputs.report-path }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Install dependencies
+      shell: bash
+      run: pip install -r "${{ github.action_path }}/requirements.txt"
+    - name: Run ShipCheck
+      id: check
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        NEBIUS_API_KEY: ${{ inputs.nebius-api-key }}
+        TAVILY_API_KEY: ${{ inputs.tavily-api-key }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        HACKATHON_URL: ${{ inputs.hackathon-url }}
+        REPO_URL: ${{ inputs.repo }}
+        REF: ${{ inputs.ref }}
+        FAIL_ON: ${{ inputs.fail-on }}
+      run: |
+        REPORT="${RUNNER_TEMP}/shipcheck-report.md"
+        echo "report-path=${REPORT}" >> "$GITHUB_OUTPUT"
+        set +e
+        python -m shipcheck.cli "$HACKATHON_URL" "$REPO_URL" --ref "$REF" --markdown "$REPORT" --fail-on "$FAIL_ON"
+        code=$?
+        [ -f "$REPORT" ] && cat "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+        exit $code

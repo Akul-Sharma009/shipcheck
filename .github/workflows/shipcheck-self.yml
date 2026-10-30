@@ -1,0 +1,16 @@
+name: ShipCheck (self)
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+jobs:
+  shipcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          hackathon-url: https://nebiusglobalaihackathon.devpost.com/
+          fail-on: never
+          nebius-api-key: ${{ secrets.NEBIUS_API_KEY }}
+          tavily-api-key: ${{ secrets.TAVILY_API_KEY }}

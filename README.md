@@ -126,6 +126,36 @@ All optional; see `.env.example`.
 | `MAX_UNCACHED_RUNS_PER_DAY` | 30 | Daily cap on paid runs |
 | `SHIPCHECK_LIVE` | true | `false` = never call paid APIs; serve saved example reports only |
 
+## GitHub Action
+
+Check your repo on every push. The report goes to the job summary.
+
+```yaml
+name: ShipCheck
+on: [push, workflow_dispatch]
+jobs:
+  shipcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Akul-Sharma009/shipcheck@master
+        with:
+          hackathon-url: https://nebiusglobalaihackathon.devpost.com/
+          fail-on: fail
+          nebius-api-key: ${{ secrets.NEBIUS_API_KEY }}
+```
+
+| Input | Default | Purpose |
+|---|---|---|
+| `hackathon-url` | required | Devpost page of the hackathon |
+| `repo` | this repo | Repo URL to check |
+| `ref` | `github.sha` | Commit to check |
+| `fail-on` | `fail` | `fail`, `unclear` (also fails on unclear) or `never` |
+| `nebius-api-key` | required | Nebius Token Factory key |
+| `tavily-api-key` | none | Only needed for hackathons whose rules are not bundled in `examples/rules/` (the Nebius hackathon is bundled) |
+| `github-token` | `github.token` | Reads the repo |
+
+Outputs: `pass`, `fail`, `unclear` (counts) and `report-path` (Markdown file on the runner).
+
 ## Cost and safety guardrails
 
 - **Caching.** Results are cached by (commit SHA, hackathon, submission text), so rerunning the same commit is free. Rules are cached per hackathon, so the checklist doesn't change between reruns. This hackathon's rules are bundled in `examples/rules/`, so the demo doesn't depend on the Devpost page staying up.
