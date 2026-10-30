@@ -18,6 +18,7 @@ PER_FILE_CHARS = 12_000  # evidence.py truncates each file to this
 RAW = "https://raw.githubusercontent.com"
 GL_API = "https://gitlab.com/api/v4"
 GL_TREE_CAP = 2000
+BB_MAX_FETCH = 20
 BB_API = "https://api.bitbucket.org/2.0"
 BB_TREE_CAP = 2000
 
@@ -400,7 +401,10 @@ def _bb_ingest(repo_url: str, ref: Optional[str]) -> Tuple[RepoFacts, str, Dict[
     license_file = _gl_root_file(tree, r"(un)?licen[cs]e|copying")
     spdx = detect_license(_bb_raw(full_name, sha, license_file) or "") if license_file else None
 
-    files = select_files(None, ("bb", full_name), sha, tree, readme_path)
+    # Bitbucket's anonymous API limit is small and every raw fetch counts, so only fetch the best-ranked paths.
+    pool = sorted((t for t in tree if t["type"] == "blob" and not _skippable(t["path"], t.get("size", 0))),
+                  key=lambda t: _rank(t["path"]))[:BB_MAX_FETCH]
+    files = select_files(None, ("bb", full_name), sha, pool, readme_path)
     html = ((repo.get("links") or {}).get("html") or {}).get("href") or f"https://bitbucket.org/{full_name}"
     facts = RepoFacts(
         full_name=full_name, url=html, is_public=True, default_branch=branch, head_sha=sha, license_spdx=spdx,
@@ -411,7 +415,14 @@ def _bb_ingest(repo_url: str, ref: Optional[str]) -> Tuple[RepoFacts, str, Dict[
     return facts, readme, files
 
 
-def _bb_commits_in_window(full_name: str, start: datetime, end: datetime) -> int:
+def _bb_commits_in_window(full_name: str, start: datetime, end: datetime) -> Optional[int]:
+    try:
+        return _bb_count_commits(full_name, start, end)
+    except RepoError:  # rate limited: let D5 fall back to the last commit date rather than failing the run
+        return None
+
+
+def _bb_count_commits(full_name: str, start: datetime, end: datetime) -> int:
     r = _bb_get(f"/repositories/{full_name}")
     branch = ((r.json().get("mainbranch") or {}).get("name") or "") if r.status_code == 200 else ""
     if not branch:
@@ -512,8 +523,8 @@ def _parse_dt(value: Optional[str]) -> Optional[datetime]:
     return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
 
 
-def commits_in_window(full_name: str, start: datetime, end: datetime, url: str = "") -> int:
-    """Number of commits on the default branch in [start, end], capped at 100."""
+def commits_in_window(full_name: str, start: datetime, end: datetime, url: str = "") -> Optional[int]:
+    """Number of commits on the default branch in [start, end], capped at 100; None if it couldn't be counted."""
     if is_gitlab(url):
         return _gl_commits_in_window(full_name, start, end)
     if is_bitbucket(url):
@@ -576,8 +587,14 @@ def deterministic_checks(facts: RepoFacts, rules: Optional[Rules] = None) -> Lis
     end = _parse_dt(rules.deadline) if rules else None
     if start and end:
         n = commits_in_window(facts.full_name, start, end, facts.url)
+        last = _parse_dt(facts.last_commit_iso)
+        counted = n is not None
+        if not counted:  # couldn't count (rate limited); the head commit's date still tells us something
+            n = 1 if last and start <= last <= end else 0
+        what = (f"{n}{'+' if n == 100 else ''} commits" if counted
+                else f"Couldn't count commits; the last commit is {'inside' if n else 'outside'} the window")
         checks.append(Check(id="D5", name="Commits during the submission period", status="pass" if n else "fail",
-                            evidence=[f"{n}{'+' if n == 100 else ''} commits between {start:%d %b %Y} and "
+                            evidence=[f"{what} between {start:%d %b %Y} and "
                                       f"{end:%d %b %Y}; last commit {facts.last_commit_iso}"],
                             fix=None if n else "Commit and push your work made during the hackathon."))
     else:
