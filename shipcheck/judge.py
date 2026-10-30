@@ -9,14 +9,14 @@ from shipcheck.schemas import Check, FileEvidence, RepoFacts, Rules, Verdict, Ve
 
 MAX_README_CHARS = 8_000
 
-PROMPT = """You are checking a hackathon submission's GitHub repo against the hackathon's requirements.
+PROMPT = """You are checking a hackathon submission's code repo against the hackathon's requirements.
 
 Decide for EACH requirement below: pass, fail, or unclear.
 - pass: the evidence clearly shows the requirement is met. Cite at least one file path (exactly as listed) or check id (D1-D5).
 - fail: the evidence shows it is not met, or something required is clearly absent.
 - unclear: the evidence is insufficient either way.
 - For required platform/model usage, a pass needs code or config evidence (a path:line from the code lines below, or a file whose per-file evidence lists it). A README claim alone is "unclear".
-- Deterministic checks (D1-D5) are facts from the GitHub API and override your judgment.
+- Deterministic checks (D1-D5) are facts from the repo host's API and override your judgment.
 - evidence: short items citing file paths, path:line, or check ids. No invented paths.
 - fix: for fail/unclear, ONE concrete action the entrant can do in under 30 minutes (name the file and what to add). null for pass.
 
@@ -136,11 +136,14 @@ def check_usage(kind: str, v: Verdict, usage: Dict[str, List[str]]) -> Verdict:
                        evidence=usage["other"][:2] + [f"No code or config references {absent}"],
                        fix=f"{claim}Switch the model call in {usage['other'][0].split(':')[0]} to Nemotron on Nebius "
                            "Token Factory (OpenAI-compatible: set base_url and the model ID).")
+    # The fix must change code, never just the README: a README-only claim is exactly what fails here.
+    code_fix = (f"Reference {absent} in code or config, e.g. an OpenAI-compatible client with "
+                "base_url https://api.tokenfactory.nebius.com/v1/ and model nvidia/nemotron-3-super-120b-a12b"
+                + (", then describe that in the README." if kind == "readme" else "."))
     if v.status == "pass":
         return Verdict(requirement_id=v.requirement_id, status="unclear",
-                       evidence=v.evidence + [f"(downgraded: no code or config references {absent})"],
-                       fix=v.fix or f"Make {absent} visible in code or config so a judge can find it.")
-    return v
+                       evidence=v.evidence + [f"(downgraded: no code or config references {absent})"], fix=code_fix)
+    return v.model_copy(update={"fix": code_fix})
 
 
 def judge(rules: Rules, facts: RepoFacts, checks: List[Check], readme: str, evidence: List[FileEvidence],

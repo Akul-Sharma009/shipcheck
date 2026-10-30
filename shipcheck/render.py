@@ -7,6 +7,7 @@ try:
 except ImportError:  # pragma: no cover
     ZoneInfo = None  # type: ignore
 
+from shipcheck.repo import host_name
 from shipcheck.schemas import Report
 
 LABEL = {"pass": "PASS", "fail": "FAIL", "unclear": "UNCLEAR", "not_checkable": "CONFIRM"}
@@ -52,7 +53,7 @@ def to_markdown(report: Report) -> str:
              f"**{c['pass']} pass · {c['fail']} fail · {c['unclear']} unclear · {c['not_checkable']} to confirm yourself**",
              "", "## Fix before you submit"]
     lines += [f"- **{LABEL[s]} {i}** {p}  \n  Fix: {_one_line(fx)}" for s, i, p, fx in to_fix(report)] or ["- Nothing to fix."]
-    lines += ["", "## Repo checks (GitHub API, no AI)"]
+    lines += ["", f"## Repo checks ({host_name(f.url)} API, no AI)"]
     lines += [f"- {LABEL[x.status]} {x.id} {x.name}: {'; '.join(x.evidence)}" for x in report.checks]
     lines += ["", "## Requirements"]
     for v in report.verdicts:

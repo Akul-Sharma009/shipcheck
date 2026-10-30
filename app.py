@@ -6,7 +6,7 @@ from shipcheck.drafts import draft_readme_section, is_readme_fix
 from shipcheck.llm import LLMError
 from shipcheck.pipeline import PipelineError, run
 from shipcheck.render import LABEL, changes, counts, countdown, keyword_missed, to_fix, to_markdown
-from shipcheck.repo import RepoError, head
+from shipcheck.repo import RepoError, head, host_name
 from shipcheck.schemas import Report
 
 DEFAULT_HACKATHON = "https://nebiusglobalaihackathon.devpost.com/"
@@ -196,7 +196,8 @@ def render(report: Report) -> None:
             if v.fix:
                 st.caption(f"Fix: {md(v.fix)}")
     with tabs[1]:
-        st.caption("Facts from the GitHub API (and YouTube, if you gave a video). No AI involved; these override the model.")
+        st.caption(f"Facts from the {host_name(f.url)} API (and YouTube, if you gave a video). "
+                   "No AI involved; these override the model.")
         for ch in report.checks:
             if not ch.required:
                 st.markdown(f":gray-background[**INFO**] &nbsp; **{ch.id}** {ch.name} "
@@ -220,7 +221,7 @@ def render(report: Report) -> None:
                     + (f", submission period {rules.submission_start[:10]} → {rules.deadline[:10]}."
                        if rules.submission_start and rules.deadline else "."))
         st.markdown(f"**Repo:** {f.files_considered} of {f.files_in_tree} files read; "
-                    f"license as detected by GitHub: `{f.license_spdx or 'none'}`.")
+                    f"license as detected by {host_name(f.url)}: `{f.license_spdx or 'none'}`.")
         role = {config.MODEL_NANO: "Nemotron Nano: one call per file, in parallel",
                 config.MODEL_SUPER: "Nemotron Super: rules → checklist, then verdicts",
                 config.MODEL_ULTRA: "Nemotron Ultra"}

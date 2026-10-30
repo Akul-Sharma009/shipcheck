@@ -51,6 +51,10 @@ def _gl_parse(url: str) -> Tuple[str, str]:
     return "/".join(parts[:-1]), parts[-1]
 
 
+def host_name(url: str) -> str:
+    return "Bitbucket" if is_bitbucket(url) else "GitLab" if is_gitlab(url) else "GitHub"
+
+
 def is_bitbucket(url: str) -> bool:
     return bool(re.search(r"(?:^|//|@)(?:www\.)?bitbucket\.org[/:]", url.strip(), re.I))
 

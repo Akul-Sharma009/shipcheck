@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, Optional
 from shipcheck.baseline import keyword_verdict
 from shipcheck.evidence import gather_evidence, grep_hits
 from shipcheck.judge import judge, mark_required
-from shipcheck.repo import deterministic_checks, ingest
+from shipcheck.repo import deterministic_checks, host_name, ingest
 from shipcheck.rules import get_rules
 from shipcheck.schemas import Report, Rules
 from shipcheck.submission import apply_description, apply_video, judge_description, video_checks
@@ -31,7 +31,7 @@ def run(hackathon_url: str, repo_url: str, pasted_rules: str = "", rules: Option
         if rules is None:
             raise PipelineError(f"Couldn't extract the rules: {rules_source}. Paste the rules text instead.")
 
-    say("Reading the repo (GitHub API)…")
+    say(f"Reading the repo ({host_name(repo_url)} API)…")
     facts, readme, files = ingest(repo_url, ref)
     checks = deterministic_checks(facts, rules)
     mark_required(rules, checks)
