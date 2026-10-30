@@ -7,11 +7,13 @@ Paste a hackathon URL and your GitHub repo. In about 30 seconds ShipCheck gives 
 - a one-line fix under every failure
 - a ready-to-paste README section for README failures
 
-- **Live demo:** <TODO: Streamlit Cloud URL>
+- **Live demo:** https://shipcheck.streamlit.app
 - **Demo video:** <TODO: YouTube URL>
 - **Built for:** Nebius x NVIDIA Global AI Hackathon, *Best Apps and Agents* track
 
-<!-- TODO: screenshot of a report from the deployed app -->
+[![ShipCheck report on a deliberately broken demo repo](docs/screenshot.png)](https://shipcheck.streamlit.app/?report=ex-demo-broken)
+
+*A report on [a deliberately broken demo repo](https://github.com/Akul-Sharma009/demo). Its LICENSE file exists but is modified MIT, so GitHub can't detect it, and its README has a Setup heading with no commands. A keyword check passes all three; ShipCheck fails them. [Open this report](https://shipcheck.streamlit.app/?report=ex-demo-broken).*
 
 ## What it does
 
@@ -147,6 +149,7 @@ The keyword check's false pass was a real entry with a truncated MIT license. Gi
 
 - **Public GitHub repos and Devpost hackathons only.** Other platforms work if you paste the rules text.
 - **AI verdicts can be wrong.** They are constrained to cite evidence, but treat "unclear" as "go look". The evaluation above is small (28 labels).
+- **A README claim can still pass a README requirement.** On the demo repo, "README must highlight how you used Nemotron" passes because the README says so, even though the code calls OpenAI. The code-level requirements (runs on Token Factory, uses an NVIDIA model) come back "unclear" rather than fail, since a pass needs code evidence.
 - **Video checks cover the essentials only:** visibility and length. ShipCheck doesn't watch the content.
 - **Large repos:** at most 40 files (12K characters each) are read, prioritising files that name a platform or model.
 - **Sleeping demo:** the hosted demo runs on Streamlit Community Cloud, which sleeps after inactivity. If you see "This app has gone to sleep", click *Yes, get this app back up* and wait about 30 s.
