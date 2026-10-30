@@ -13,7 +13,7 @@ Paste a hackathon URL and your GitHub or GitLab repo. In about 30 seconds ShipCh
 
 [![ShipCheck report on a deliberately broken demo repo](docs/screenshot.png)](https://shipcheck.streamlit.app/?report=ex-demo-broken)
 
-*A report on [a deliberately broken demo repo](https://github.com/Akul-Sharma009/demo/tree/6d7d6d5). Its LICENSE file exists but is modified MIT, so GitHub can't detect it, and its README has a Setup heading with no commands. A keyword check passes all three; ShipCheck fails them. [Open this report](https://shipcheck.streamlit.app/?report=ex-demo-broken).*
+*A report on [a deliberately broken demo repo](https://github.com/Akul-Sharma009/demo/tree/6d7d6d5). Its LICENSE file exists but is modified MIT, so GitHub can't detect it. Its README has a Setup heading with no commands, and claims Nemotron on Token Factory while `app.py` calls `gpt-4o-mini`. A keyword check passes five of these requirements; ShipCheck fails all of them, citing the line. [Open this report](https://shipcheck.streamlit.app/?report=ex-demo-broken).*
 
 ## What it does
 
@@ -39,6 +39,7 @@ Rules pages run to 40,000 characters, and nobody rereads them at 11 PM. ShipChec
 - GitHub's facts override the model.
 - Every AI "pass" must cite a file ShipCheck actually read, or a quote that appears in your text. Otherwise it's downgraded to "unclear".
 - Model IDs and services the model claims to have seen are dropped unless they appear in that file.
+- A README claim can't pass a usage requirement. "Uses an NVIDIA model", "runs on Token Factory" and "README must highlight…" need an NVIDIA model ID or Nebius endpoint in code or config. If the code names another provider instead, they fail with that line.
 
 ## How it uses NVIDIA Nemotron and Nebius Token Factory
 
@@ -179,7 +180,8 @@ The keyword check's false pass was a real entry with a truncated MIT license. Gi
 
 - **Public GitHub and GitLab.com repos, and Devpost hackathons, only.** Self-hosted GitLab is not supported. Other hackathon platforms work if you paste the rules text.
 - **AI verdicts can be wrong.** They are constrained to cite evidence, but treat "unclear" as "go look". The evaluation above is small (28 labels).
-- **A README claim can still pass a README requirement.** On the demo repo, "README must highlight how you used Nemotron" passes because the README says so, even though the code calls OpenAI. The code-level requirements (runs on Token Factory, uses an NVIDIA model) come back "unclear" rather than fail, since a pass needs code evidence.
+- **Usage detection reads model IDs and endpoints, not behaviour.** A repo that sets its model only through an environment variable, with no ID in any file ShipCheck reads, gets "unclear" for model usage rather than a pass.
+- **The GitHub Action hasn't run on a real runner yet.** The CLI it wraps is tested; the composite action itself is not.
 - **Video checks cover the essentials only:** visibility and length. ShipCheck doesn't watch the content.
 - **Large repos:** at most 40 files (12K characters each) are read, prioritising files that name a platform or model.
 - **Sleeping demo:** the hosted demo runs on Streamlit Community Cloud, which sleeps after inactivity. If you see "This app has gone to sleep", click *Yes, get this app back up* and wait about 30 s.
@@ -188,20 +190,22 @@ The keyword check's false pass was a real entry with a truncated MIT license. Gi
 
 ```
 app.py                  Streamlit UI (report card)
+action.yml              GitHub Action (composite) wrapping the CLI
 shipcheck/
   config.py             secrets, model IDs, limits
   llm.py                Token Factory client, call_json() with validation + retry
   rules.py              Tavily Extract → clean → Super → Rules
-  repo.py               GitHub ingestion, file selection, deterministic checks
+  repo.py               GitHub + GitLab ingestion, file selection, deterministic checks
   evidence.py           Nano per-file evidence (parallel) + grounding, path:line grep
-  judge.py              Super verdicts, deterministic overrides, false-pass guard
+  judge.py              Super verdicts, deterministic overrides, false-pass guard, code-usage check
   submission.py         YouTube video facts, Devpost write-up verdicts
   drafts.py             README fix drafts
   pipeline.py           one run → Report
   guard.py              cache, run caps, examples
   render.py             counts, fix list, diff, countdown, Markdown export
-  cli.py                command-line runner
+  cli.py                command-line runner (--ref, --markdown, --fail-on)
 examples/               saved reports + bundled rules (offline demo)
+eval/                   head-to-head evaluation: labels, harness, results
 ```
 
 ## License
