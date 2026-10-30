@@ -170,8 +170,9 @@ def head(repo_url: str) -> Tuple[str, str]:
     return repo["full_name"], c.json()["sha"]
 
 
-def ingest(repo_url: str) -> Tuple[RepoFacts, str, Dict[str, str]]:
-    """Returns (facts, README text, {path: content} for selected files). Private repos are not read."""
+def ingest(repo_url: str, ref: Optional[str] = None) -> Tuple[RepoFacts, str, Dict[str, str]]:
+    """Returns (facts, README text, {path: content} for selected files) at `ref` (default: the default branch's
+    head). Private repos are not read."""
     owner, name = parse_repo_url(repo_url)
     s = _session()
     r = _get(s, f"/repos/{owner}/{name}")
@@ -184,7 +185,7 @@ def ingest(repo_url: str) -> Tuple[RepoFacts, str, Dict[str, str]]:
         # The server's token may be able to read private repos; never ingest them for an anonymous user.
         raise RepoError(f"{full_name} is private. Judges can't see it either: make it public, then rerun.")
 
-    c = _get(s, f"/repos/{full_name}/commits/{branch}")
+    c = _get(s, f"/repos/{full_name}/commits/{ref or branch}")
     c.raise_for_status()
     head = c.json()
     sha = head["sha"]
@@ -195,7 +196,7 @@ def ingest(repo_url: str) -> Tuple[RepoFacts, str, Dict[str, str]]:
     tree = t.json().get("tree", [])
 
     readme, readme_path = "", None
-    rd = _get(s, f"/repos/{full_name}/readme")
+    rd = _get(s, f"/repos/{full_name}/readme", ref=sha)
     if rd.status_code == 200:
         j = rd.json()
         readme_path = j.get("path")
@@ -213,7 +214,9 @@ def ingest(repo_url: str) -> Tuple[RepoFacts, str, Dict[str, str]]:
         full_name=full_name, url=repo["html_url"], is_public=not repo.get("private"), default_branch=branch,
         head_sha=sha, license_spdx=lic.get("spdx_id"), license_file=license_file, has_readme=bool(readme),
         readme_path=readme_path, readme_has_setup=readme_has_setup(readme), last_commit_iso=last_commit,
-        files_in_tree=sum(1 for x in tree if x.get("type") == "blob"), files_considered=len(files) + bool(readme))
+        files_in_tree=sum(1 for x in tree if x.get("type") == "blob"), files_considered=len(files) + bool(readme),
+        license_file_present=any(x.get("type") == "blob" and "/" not in x["path"]
+                                 and re.match(r"(un)?licen[cs]e|copying", x["path"], re.I) for x in tree))
     return facts, readme, files
 
 

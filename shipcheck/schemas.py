@@ -50,6 +50,7 @@ class RepoFacts(BaseModel):
     last_commit_iso: Optional[str]
     files_in_tree: int
     files_considered: int
+    license_file_present: bool = False  # a LICENSE/COPYING file at the root, whether or not GitHub detects it
 
 
 class Check(BaseModel):
@@ -100,3 +101,4 @@ class Report(BaseModel):
     readme: str = ""  # first 8K chars, for drafting README fixes
     video_url: str = ""
     description_checked: bool = False
+    keyword: Dict[str, str] = {}  # requirement id -> what the keyword baseline would say

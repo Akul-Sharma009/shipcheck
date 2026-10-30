@@ -12,6 +12,12 @@ from shipcheck.schemas import Report
 LABEL = {"pass": "PASS", "fail": "FAIL", "unclear": "UNCLEAR", "not_checkable": "CONFIRM"}
 
 
+def keyword_missed(report: Report) -> List[str]:
+    """Requirement ids ShipCheck failed that a keyword/file check would have passed."""
+    return [v.requirement_id for v in report.verdicts
+            if v.status == "fail" and report.keyword.get(v.requirement_id) == "pass"]
+
+
 def counts(report: Report) -> Dict[str, int]:
     out = {s: 0 for s in LABEL}
     for v in report.verdicts:

@@ -5,6 +5,7 @@ SHIPCHECK_LIVE=false is the reliable off switch.
 """
 import hashlib
 import json
+import re
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
@@ -103,3 +104,14 @@ def examples() -> List[Tuple[str, Report]]:
         except (OSError, ValueError):
             continue
     return out
+
+
+# ---------- shareable links: ?report=<id> ----------
+def shared(report_id: str) -> Optional[Report]:
+    """Load a report by its share id: a 24-hex cache key, or 'ex-<name>' for a bundled example.
+    The id comes from a URL, so it is validated before it touches a file path."""
+    if re.fullmatch(r"[0-9a-f]{24}", report_id or ""):
+        return get_report(report_id)
+    if (report_id or "").startswith("ex-"):
+        return dict(examples()).get(report_id[3:])
+    return None

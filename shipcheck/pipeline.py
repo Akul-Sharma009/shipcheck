@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Optional
 
+from shipcheck.baseline import keyword_verdict
 from shipcheck.evidence import gather_evidence, grep_hits
 from shipcheck.judge import judge, mark_required
 from shipcheck.repo import deterministic_checks, ingest
@@ -18,7 +19,7 @@ class PipelineError(Exception):
 
 def run(hackathon_url: str, repo_url: str, pasted_rules: str = "", rules: Optional[Rules] = None,
         rules_source: str = "", description: str = "", video_url: str = "",
-        progress: Optional[Callable[[str], None]] = None) -> Report:
+        progress: Optional[Callable[[str], None]] = None, ref: Optional[str] = None) -> Report:
     """Pass `rules` to reuse a cached extraction. Raises PipelineError, RepoError or LLMError."""
     say = progress or (lambda msg: None)
     stats: Dict[str, Any] = {}
@@ -31,7 +32,7 @@ def run(hackathon_url: str, repo_url: str, pasted_rules: str = "", rules: Option
             raise PipelineError(f"Couldn't extract the rules: {rules_source}. Paste the rules text instead.")
 
     say("Reading the repo (GitHub API)…")
-    facts, readme, files = ingest(repo_url)
+    facts, readme, files = ingest(repo_url, ref)
     checks = deterministic_checks(facts, rules)
     mark_required(rules, checks)
 
@@ -52,7 +53,9 @@ def run(hackathon_url: str, repo_url: str, pasted_rules: str = "", rules: Option
         checks += vchecks
         verdicts = apply_video(rules, verdicts, vchecks)
 
+    keyword = {r.id: keyword_verdict(r, facts, readme, files) for r in rules.requirements if r.checkable_from_repo}
     return Report(hackathon_url=hackathon_url, repo_url=repo_url, rules=rules, rules_source=rules_source,
                   facts=facts, checks=checks, verdicts=verdicts, evidence=evidence, usage=stats,
                   readme=readme[:8000], video_url=video_url.strip(), description_checked=bool(description.strip()),
+                  keyword=keyword,
                   seconds=round(time.time() - t0, 1), created_at=datetime.now(timezone.utc).isoformat())

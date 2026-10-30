@@ -5,7 +5,7 @@ from shipcheck import config, guard
 from shipcheck.drafts import draft_readme_section, is_readme_fix
 from shipcheck.llm import LLMError
 from shipcheck.pipeline import PipelineError, run
-from shipcheck.render import LABEL, changes, counts, countdown, to_fix, to_markdown
+from shipcheck.render import LABEL, changes, counts, countdown, keyword_missed, to_fix, to_markdown
 from shipcheck.repo import RepoError, head
 from shipcheck.schemas import Report
 
@@ -26,7 +26,7 @@ def code_list(items) -> str:
 
 
 # ---------- running ----------
-def remember(report: Report) -> None:
+def remember(report: Report, share_id: str) -> None:
     """Keep the last check per repo + hackathon in this session, to show what a new commit fixed."""
     history = st.session_state.setdefault("history", {})
     key = (report.facts.full_name, report.hackathon_url)
@@ -36,14 +36,19 @@ def remember(report: Report) -> None:
         st.session_state.diff = {"sha": report.facts.head_sha, "prev": prev.facts.head_sha[:7],
                                  "fixed": fixed, "broke": broke}
     history[key] = report
+    show(report, share_id)
+
+
+def show(report: Report, share_id: str) -> None:
     st.session_state.report = report
+    st.session_state.share = share_id
 
 
 
 def show_example(reason: str) -> None:
     ex = guard.examples()
     if ex:
-        st.session_state.report = ex[0][1]
+        show(ex[0][1], f"ex-{ex[0][0]}")
         st.session_state.notice = f"{reason} Showing a saved example report instead."
     else:
         st.session_state.notice = reason
@@ -66,7 +71,7 @@ def check(hackathon_url: str, repo_url: str, pasted: str, video_url: str, descri
     key = guard.report_key(sha, rkey, video_url.strip() + "\n" + description.strip())
     cached = guard.get_report(key)
     if cached:
-        remember(cached)
+        remember(cached, key)
         st.session_state.notice = f"Already checked commit `{sha[:7]}`: showing the saved result (no new model calls)."
         return
 
@@ -93,7 +98,7 @@ def check(hackathon_url: str, repo_url: str, pasted: str, video_url: str, descri
     if not rules_hit:
         guard.put_rules(rkey, report.rules, report.rules_source)
     guard.put_report(key, report)
-    remember(report)
+    remember(report, key)
 
 
 # ---------- fix drafts ----------
@@ -160,11 +165,18 @@ def render(report: Report) -> None:
                                       ("not_checkable", "Confirm yourself"))):
         col.metric(label, c[s])
 
+    missed = keyword_missed(report)
+    if missed:
+        st.markdown(f":violet-background[**{len(missed)} of these would slip past a keyword check**] "
+                    f":violet[(e.g. \"is there a LICENSE file?\"): {', '.join(missed)}]")
+
     if fixes:
         st.markdown("#### Fix these first")
         for status, ident, problem, fix in fixes:
             with st.container(border=True):
                 st.markdown(f"{BADGE[status]} &nbsp; **{ident}** {md(problem)}")
+                if ident in missed:
+                    st.caption(":violet[A keyword check would have said PASS here.]")
                 if fix:
                     st.markdown(f"**Fix:** {md(fix)}")
                 if is_readme_fix(report, ident) and report.evidence:
@@ -221,6 +233,10 @@ def render(report: Report) -> None:
                                "Models": ", ".join(e.models_used)} for e in report.evidence],
                              hide_index=True, width="stretch")
 
+    share = st.session_state.get("share")
+    if share:
+        st.markdown(f"🔗 [Link to this report](?report={share}) · anyone with the link sees it, "
+                    "no new checks are run")
     st.download_button("Download report (Markdown)", to_markdown(report),
                        file_name=f"shipcheck-{f.full_name.replace('/', '-')}-{f.head_sha[:7]}.md")
 
@@ -251,10 +267,16 @@ if submitted:
         check(hackathon_url.strip() or DEFAULT_HACKATHON, repo_url.strip(), pasted, video_url, description)
 
 if "report" not in st.session_state and not submitted:
+    shared_id = st.query_params.get("report", "")
+    shared_report = guard.shared(shared_id) if shared_id else None
     ex = guard.examples()
-    if ex:
-        st.session_state.report = ex[0][1]
-        st.session_state.notice = "Example report. Run your own repo above."
+    if shared_report:
+        show(shared_report, shared_id)
+        st.session_state.notice = "Shared report. Run your own repo above."
+    elif ex:
+        show(ex[0][1], f"ex-{ex[0][0]}")
+        st.session_state.notice = ("That shared report has expired (the app restarted). " if shared_id else "") \
+            + "Example report. Run your own repo above."
 
 notice = st.session_state.get("notice", "")
 if notice.startswith("error:"):
@@ -278,7 +300,7 @@ with st.sidebar:
         st.markdown("### Example reports")
         for name, rep in ex:
             if st.button(rep.facts.full_name, key=f"ex_{name}", width="stretch"):
-                st.session_state.report = rep
+                show(rep, f"ex-{name}")
                 st.session_state.notice = "Example report."
                 st.rerun()
     st.caption(f"Live checks left this session: {max(0, config.MAX_RUNS_PER_SESSION - st.session_state.get('runs', 0))}")
