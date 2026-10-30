@@ -239,7 +239,7 @@ with st.form("check"):
         video_url = st.text_input("YouTube demo video", placeholder="https://youtu.be/…")
         description = st.text_area("Devpost write-up", height=150,
                                    placeholder="Paste your project description, plus any other text fields "
-                                               "(e.g. feedback). Nothing is stored or posted.")
+                                               "(e.g. feedback). Used only for this check; never posted anywhere.")
     with st.expander("Rules page won't load? Paste the rules text instead"):
         pasted = st.text_area("Rules text", height=150, label_visibility="collapsed")
     submitted = st.form_submit_button("Check my submission", type="primary", width="stretch")
