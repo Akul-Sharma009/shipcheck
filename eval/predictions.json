@@ -7,7 +7,7 @@
    "R6": "pass",
    "R7": "fail",
    "R8": "pass",
-   "R9": "pass"
+   "R9": "unclear"
   },
   "emirakbarov/nebius-nvidia-hackathon": {
    "R1": "pass",
@@ -28,6 +28,51 @@
    "R9": "pass"
   },
   "Fu93/tradeflow-ai": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "ranvirjroyal-2703/nemoforge-nebius-nvidia-hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "JDOrga/-Nebius-Hackathon-LightTry": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "fail",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "fail"
+  },
+  "Naren192006/Nebius-Hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "akashkolte/nebius_hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "unclear"
+  },
+  "kashu94/crewops-nebius-nvidia-hackathon": {
    "R1": "pass",
    "R2": "pass",
    "R5": "pass",
@@ -73,11 +118,56 @@
    "R7": "pass",
    "R8": "pass",
    "R9": "pass"
+  },
+  "ranvirjroyal-2703/nemoforge-nebius-nvidia-hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "unclear",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "JDOrga/-Nebius-Hackathon-LightTry": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "unclear",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "Naren192006/Nebius-Hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "unclear",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "akashkolte/nebius_hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "unclear",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "kashu94/crewops-nebius-nvidia-hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "unclear",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
   }
  },
  "One model call": {
   "Udayasaran-kumar/nebius-docpilot": {
-   "R1": "pass",
+   "R1": "fail",
    "R2": "pass",
    "R5": "pass",
    "R6": "pass",
@@ -98,12 +188,57 @@
    "R1": "pass",
    "R2": "pass",
    "R5": "pass",
-   "R6": "pass",
+   "R6": "fail",
    "R7": "fail",
    "R8": "fail",
    "R9": "pass"
   },
   "Fu93/tradeflow-ai": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "ranvirjroyal-2703/nemoforge-nebius-nvidia-hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "unclear"
+  },
+  "JDOrga/-Nebius-Hackathon-LightTry": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "fail",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "fail"
+  },
+  "Naren192006/Nebius-Hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "akashkolte/nebius_hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "kashu94/crewops-nebius-nvidia-hackathon": {
    "R1": "pass",
    "R2": "pass",
    "R5": "pass",
@@ -148,6 +283,51 @@
    "R6": "pass",
    "R7": "fail",
    "R8": "pass",
+   "R9": "pass"
+  },
+  "ranvirjroyal-2703/nemoforge-nebius-nvidia-hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "JDOrga/-Nebius-Hackathon-LightTry": {
+   "R1": "unclear",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "fail",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "fail"
+  },
+  "Naren192006/Nebius-Hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "akashkolte/nebius_hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "kashu94/crewops-nebius-nvidia-hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "fail",
+   "R7": "fail",
+   "R8": "fail",
    "R9": "pass"
   }
  }

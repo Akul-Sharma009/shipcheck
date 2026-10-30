@@ -170,20 +170,23 @@ Outputs: `pass`, `fail`, `unclear` (counts) and `report-path` (Markdown file on 
 
 ## Evaluation
 
-We ran a head-to-head on 4 real entries to this hackathon, pinned to a commit each. It covers 28 requirement labels (6 true fails), from a blind independent reviewer. Details and caveats are in [eval/RESULTS.md](eval/RESULTS.md).
+We ran a head-to-head on 9 real entries to this hackathon, pinned to a commit each: 63 requirement labels (10 true fails) from blind independent reviewers that never saw ShipCheck. Details, both runs and every error are in [eval/RESULTS.md](eval/RESULTS.md).
 
-| Method | Accuracy | False-pass rate |
-|---|---|---|
-| **ShipCheck** | **100%** (28/28) | **0%** |
-| One Nemotron Super call with the whole repo pasted in | 89% | 0% |
-| Keyword check ("is there a LICENSE file?") | 82% | 17% |
+| Method | Accuracy | False-pass rate | High-confidence labels (55) |
+|---|---|---|---|
+| **ShipCheck** | **92%** | 20% | **100%**, 0 false passes |
+| One Nemotron Super call with the whole repo pasted in | 90% | 10% | 95% |
+| The same, without GitHub's license field | 79% | 20% | 82% |
+| Keyword check ("is there a LICENSE file?") | 81% | 30% | 85% |
 
-The keyword check's false pass was a real entry with a truncated MIT license. GitHub doesn't detect it, so the rules count it as unlicensed. The sample is small, so read it as "at least as good, with fewer errors", not as a precise accuracy figure.
+- ShipCheck is the most accurate, and it made no errors on the 55 labels the reviewer was confident about. All its errors are on judgment calls like "does the README *highlight* Token Factory usage".
+- It does **not** clearly beat a single model call on false passes: across two runs each scored 10% and 20%, and with 10 true fails one item is 10 points.
+- The keyword check's false passes include a real entry with a truncated MIT license. GitHub doesn't detect it, so the rules count it as unlicensed.
 
 ## Limitations
 
 - **Public GitHub, GitLab.com and Bitbucket Cloud repos, and Devpost hackathons, only.** Self-hosted GitLab is not supported. Bitbucket has no license detection, so ShipCheck matches the root LICENSE text against common licenses itself. Bitbucket's anonymous API limit is low, so ShipCheck reads at most 20 files there, and a busy hour can return "rate limit reached, try again later". Other hackathon platforms work if you paste the rules text.
-- **AI verdicts can be wrong.** They are constrained to cite evidence, but treat "unclear" as "go look". The evaluation above is small (28 labels).
+- **AI verdicts can be wrong.** They are constrained to cite evidence, but treat "unclear" as "go look". The evaluation above is small (63 labels, 10 true fails).
 - **Usage detection reads model IDs and endpoints, not behaviour.** A repo that sets its model only through an environment variable, with no ID in any file ShipCheck reads, gets "unclear" for model usage rather than a pass.
 - **The GitHub Action hasn't run on a real runner yet.** The CLI it wraps is tested, and the PR-comment script is tested against a mocked `gh`; the composite action end to end is not.
 - **Video checks cover the essentials only:** visibility and length. ShipCheck doesn't watch the content.

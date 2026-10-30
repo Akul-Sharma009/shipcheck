@@ -191,7 +191,7 @@ def select_files(s: Optional[requests.Session], full_name, sha: str, tree: List[
 
 # ---------- README ----------
 SETUP_HEADING = re.compile(r"^#{1,4}\s*.*\b(install|installation|setup|set up|getting started|quick ?start|"
-                           r"run(ning)?( it)? locally|how to run|usage|local development|deploy)", re.I | re.M)
+                           r"run(ning)?( it)?( locally)?\s*$|run(ning)?( it)? locally|how to run|usage|local development|deploy)", re.I | re.M)
 SETUP_COMMAND = re.compile(r"\b(pip3? install|npm (install|i|run|start)|yarn( install| dev| start)?\b|pnpm |"
                            r"streamlit run|python3? \S+\.py|uvicorn |docker (compose|run|build)|cargo run|go run|"
                            r"poetry install|uv (sync|run)|make )", re.I)

@@ -165,7 +165,8 @@ def judge(rules: Rules, facts: RepoFacts, checks: List[Check], readme: str, evid
         llm = {v.requirement_id: v for v in (out.verdicts if out else [])}
 
     usage = code_usage(hits, evidence, facts.readme_path)
-    known = ({e.path for e in evidence} | set(by_id) | {facts.url, facts.full_name}
+    # Files ShipCheck read: summarized ones, plus any with grep hits (a failed Nano summary mustn't erase a file).
+    known = ({e.path for e in evidence} | {h.split(":", 1)[0] for h in hits} | set(by_id) | {facts.url, facts.full_name}
              | {p for p in (facts.readme_path, facts.license_file) if p})
     verdicts = []
     for r in rules.requirements:

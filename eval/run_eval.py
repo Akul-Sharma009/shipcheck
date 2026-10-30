@@ -38,8 +38,10 @@ SOURCE FILES:
 Return one verdict per requirement id: {ids}"""
 
 
-def one_call(rules: Rules, ids: List[str], facts, readme: str, files: Dict[str, str]) -> Dict[str, str]:
-    """The incumbent: paste everything into one model call (same model as ShipCheck, no pipeline)."""
+def one_call(rules: Rules, ids: List[str], facts, readme: str, files: Dict[str, str],
+             with_license: bool = True) -> Dict[str, str]:
+    """The incumbent: paste everything into one model call (same model as ShipCheck, no pipeline).
+    with_license=False hides GitHub's detected-license field, as a pasted repo realistically would."""
     reqs = [r for r in rules.requirements if r.id in ids]
     body, used = [], 0
     for p, c in files.items():
@@ -50,7 +52,7 @@ def one_call(rules: Rules, ids: List[str], facts, readme: str, files: Dict[str, 
         used += len(chunk)
     out = call_json(config.MODEL_SUPER, ONE_CALL.format(
         reqs="\n".join(f"{r.id}: {r.text}" for r in reqs), name=facts.full_name, public=facts.is_public,
-        license=facts.license_spdx, tree="\n".join(files), readme=readme[:8000], files="".join(body),
+        license=facts.license_spdx if with_license else "(not given)", tree="\n".join(files), readme=readme[:8000], files="".join(body),
         ids=", ".join(ids)), VerdictList, config.MAX_TOKENS_SUPER)
     got = {v.requirement_id: v.status for v in (out.verdicts if out else [])}
     return {i: got.get(i, "unclear") for i in ids}
@@ -78,7 +80,8 @@ def metrics(pairs: List[tuple]) -> Dict[str, float]:
 def main(labels_path: str, repos_path: str) -> None:
     labels = json.load(open(labels_path))
     rules, _ = guard.get_rules(guard.rules_key(HACKATHON))
-    preds: Dict[str, Dict[str, Dict[str, str]]] = {"ShipCheck": {}, "Keyword baseline": {}, "One model call": {}}
+    preds: Dict[str, Dict[str, Dict[str, str]]] = {"ShipCheck": {}, "Keyword baseline": {}, "One model call": {},
+                                                  "One model call (no license field)": {}}
     for line in open(repos_path):
         if not line.strip():
             continue
@@ -92,6 +95,7 @@ def main(labels_path: str, repos_path: str) -> None:
         reqs = {r.id: r for r in rules.requirements}
         preds["Keyword baseline"][name] = {i: keyword_verdict(reqs[i], facts, readme, files) for i in ids}
         preds["One model call"][name] = one_call(rules, ids, facts, readme, files)
+        preds["One model call (no license field)"][name] = one_call(rules, ids, facts, readme, files, False)
 
     json.dump(preds, open("eval/predictions.json", "w"), indent=1)
     rows = []

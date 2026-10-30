@@ -1,38 +1,335 @@
 {
  "Udayasaran-kumar/nebius-docpilot": {
-  "R1": {"label": "pass", "confidence": "high", "evidence": "backend/src/index.ts:106-110 OpenAI client baseURL https://api.tokenfactory.nebius.com/v1/"},
-  "R2": {"label": "pass", "confidence": "high", "evidence": "render.yaml NEBIUS_MODEL=nvidia/Nemotron-3_5-Lightning; index.ts:114 model: process.env.NEBIUS_MODEL"},
-  "R5": {"label": "pass", "confidence": "high", "evidence": "repo visibility public"},
-  "R6": {"label": "pass", "confidence": "high", "evidence": "Express backend + React frontend source; README local setup steps"},
-  "R7": {"label": "fail", "confidence": "high", "evidence": "GitHub license spdx_id NOASSERTION (LICENSE file is truncated MIT, missing liability clause)"},
-  "R8": {"label": "pass", "confidence": "high", "evidence": "README 'Local setup' with npm install / npm run dev for backend and frontend"},
-  "R9": {"label": "pass", "confidence": "low", "evidence": "README: 'Use NVIDIA Nemotron through Nebius Token Factory', Architecture line, AI inference: Nebius Token Factory; brief, no explicit 'acceleration' explanation"}
+  "R1": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "backend/src/index.ts:106-110 OpenAI client baseURL https://api.tokenfactory.nebius.com/v1/"
+  },
+  "R2": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "render.yaml NEBIUS_MODEL=nvidia/Nemotron-3_5-Lightning; index.ts:114 model: process.env.NEBIUS_MODEL"
+  },
+  "R5": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "repo visibility public"
+  },
+  "R6": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "Express backend + React frontend source; README local setup steps"
+  },
+  "R7": {
+   "label": "fail",
+   "confidence": "high",
+   "evidence": "GitHub license spdx_id NOASSERTION (LICENSE file is truncated MIT, missing liability clause)"
+  },
+  "R8": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "README 'Local setup' with npm install / npm run dev for backend and frontend"
+  },
+  "R9": {
+   "label": "pass",
+   "confidence": "low",
+   "evidence": "README: 'Use NVIDIA Nemotron through Nebius Token Factory', Architecture line, AI inference: Nebius Token Factory; brief, no explicit 'acceleration' explanation"
+  }
  },
  "emirakbarov/nebius-nvidia-hackathon": {
-  "R1": {"label": "pass", "confidence": "high", "evidence": "pipeline.py:16-19 OpenAI base_url https://api.tokenfactory.nebius.com/v1/"},
-  "R2": {"label": "pass", "confidence": "high", "evidence": "pipeline.py:24,61 model nvidia/nemotron-3-super-120b-a12b; transcribe.py NVIDIA Riva/Parakeet ASR"},
-  "R5": {"label": "pass", "confidence": "high", "evidence": "repo visibility public"},
-  "R6": {"label": "fail", "confidence": "high", "evidence": "Real Streamlit source present but no README or any run instructions in repo"},
-  "R7": {"label": "fail", "confidence": "high", "evidence": "GitHub license null; no LICENSE file"},
-  "R8": {"label": "fail", "confidence": "high", "evidence": "No README (/readme returns 404)"},
-  "R9": {"label": "fail", "confidence": "high", "evidence": "No README"}
+  "R1": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "pipeline.py:16-19 OpenAI base_url https://api.tokenfactory.nebius.com/v1/"
+  },
+  "R2": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "pipeline.py:24,61 model nvidia/nemotron-3-super-120b-a12b; transcribe.py NVIDIA Riva/Parakeet ASR"
+  },
+  "R5": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "repo visibility public"
+  },
+  "R6": {
+   "label": "fail",
+   "confidence": "high",
+   "evidence": "Real Streamlit source present but no README or any run instructions in repo"
+  },
+  "R7": {
+   "label": "fail",
+   "confidence": "high",
+   "evidence": "GitHub license null; no LICENSE file"
+  },
+  "R8": {
+   "label": "fail",
+   "confidence": "high",
+   "evidence": "No README (/readme returns 404)"
+  },
+  "R9": {
+   "label": "fail",
+   "confidence": "high",
+   "evidence": "No README"
+  }
  },
  "DhruvPatel0110/NexusFlow-NvidiaNebius-Hackathon": {
-  "R1": {"label": "pass", "confidence": "high", "evidence": "backend/config.py:32-33 NEBIUS_BASE_URL default api.tokenfactory.nebius.com/v1; backend/nebius_client.py:71 POST {base_url}/chat/completions"},
-  "R2": {"label": "pass", "confidence": "high", "evidence": "backend/config.py:35-36 NEBIUS_MODEL default nvidia/nemotron-3-super-120b-a12b, used by NebiusNemotronClient in rag_service.py"},
-  "R5": {"label": "pass", "confidence": "high", "evidence": "repo visibility public"},
-  "R6": {"label": "pass", "confidence": "high", "evidence": "FastAPI backend + React frontend source; README Quickstart & Setup Guide"},
-  "R7": {"label": "fail", "confidence": "high", "evidence": "GitHub license null; no LICENSE file in tree"},
-  "R8": {"label": "pass", "confidence": "high", "evidence": "README.md:267-334 Quickstart: pip install -r req.txt, python run.py, npm install, npm run dev"},
-  "R9": {"label": "pass", "confidence": "high", "evidence": "README.md:98-104 'NVIDIA & Nebius Integration' section: Nemotron 120B Super usage and Nebius Token Factory inference"}
+  "R1": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "backend/config.py:32-33 NEBIUS_BASE_URL default api.tokenfactory.nebius.com/v1; backend/nebius_client.py:71 POST {base_url}/chat/completions"
+  },
+  "R2": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "backend/config.py:35-36 NEBIUS_MODEL default nvidia/nemotron-3-super-120b-a12b, used by NebiusNemotronClient in rag_service.py"
+  },
+  "R5": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "repo visibility public"
+  },
+  "R6": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "FastAPI backend + React frontend source; README Quickstart & Setup Guide"
+  },
+  "R7": {
+   "label": "fail",
+   "confidence": "high",
+   "evidence": "GitHub license null; no LICENSE file in tree"
+  },
+  "R8": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "README.md:267-334 Quickstart: pip install -r req.txt, python run.py, npm install, npm run dev"
+  },
+  "R9": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "README.md:98-104 'NVIDIA & Nebius Integration' section: Nemotron 120B Super usage and Nebius Token Factory inference"
+  }
  },
  "Fu93/tradeflow-ai": {
-  "R1": {"label": "pass", "confidence": "high", "evidence": "src/config/heuristics.py:519 EXTRACTOR_BASE_URL api.tokenfactory.nebius.com/v1, used in src/desk/extract.py and src/engine/llm_config.py:nebius_endpoint"},
-  "R2": {"label": "pass", "confidence": "high", "evidence": "src/config/heuristics.py:526 EXTRACTOR_MODEL nvidia/nemotron-3-super-120b-a12b"},
-  "R5": {"label": "pass", "confidence": "high", "evidence": "repo visibility public"},
-  "R6": {"label": "pass", "confidence": "high", "evidence": "Full src/ (140 py files), Dockerfile, docker-compose; README Quick start"},
-  "R7": {"label": "pass", "confidence": "high", "evidence": "GitHub license spdx_id MIT"},
-  "R8": {"label": "pass", "confidence": "high", "evidence": "README.md:146-163 Quick start (Docker): docker compose up --build; pip install -r requirements.txt"},
-  "R9": {"label": "pass", "confidence": "high", "evidence": "README.md:55-67 'How this project uses Nebius, NVIDIA and Tavily' table"}
+  "R1": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "src/config/heuristics.py:519 EXTRACTOR_BASE_URL api.tokenfactory.nebius.com/v1, used in src/desk/extract.py and src/engine/llm_config.py:nebius_endpoint"
+  },
+  "R2": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "src/config/heuristics.py:526 EXTRACTOR_MODEL nvidia/nemotron-3-super-120b-a12b"
+  },
+  "R5": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "repo visibility public"
+  },
+  "R6": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "Full src/ (140 py files), Dockerfile, docker-compose; README Quick start"
+  },
+  "R7": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "GitHub license spdx_id MIT"
+  },
+  "R8": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "README.md:146-163 Quick start (Docker): docker compose up --build; pip install -r requirements.txt"
+  },
+  "R9": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "README.md:55-67 'How this project uses Nebius, NVIDIA and Tavily' table"
+  }
+ },
+ "ranvirjroyal-2703/nemoforge-nebius-nvidia-hackathon": {
+  "R1": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "nemoforge.py:7 OpenAI(base_url='https://api.tokenfactory.nebius.com/v1'); same in nemoswarm.py:8, codeevolve.py:9"
+  },
+  "R2": {
+   "label": "pass",
+   "confidence": "low",
+   "evidence": "nemoforge.py:11 model='nvidia/nemotron-ultra' -- references Nemotron but this id is not a real Token Factory catalog id"
+  },
+  "R5": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "public GitHub repo (private=false)"
+  },
+  "R6": {
+   "label": "fail",
+   "confidence": "low",
+   "evidence": "4 loose scripts (~65-130 lines), model ids nvidia/nemotron-ultra / nvidia/nemotron-nano are not valid Token Factory ids so calls would fail; README runs only nemoswarm.py, other 3 scripts undocumented"
+  },
+  "R7": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "LICENSE present; GitHub license API spdx_id=MIT"
+  },
+  "R8": {
+   "label": "pass",
+   "confidence": "low",
+   "evidence": "README.md 'Run' section: export NEBIUS_API_KEY, pip install -r requirements.txt, python nemoswarm.py -- minimal but present"
+  },
+  "R9": {
+   "label": "fail",
+   "confidence": "low",
+   "evidence": "README only lists which agent uses Nemotron Ultra/Nano and 'Built With Nebius Token Factory'; nothing on how Token Factory accelerated the workflow"
+  }
+ },
+ "JDOrga/-Nebius-Hackathon-LightTry": {
+  "R1": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "project/language.py:148 endpoint https://api.tokenfactory.nebius.com/v1/chat/completions; requirements-cpu.txt nebius==0.6.24; project/nebius_provider.py Nebius AI Cloud adapter"
+  },
+  "R2": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "project/language.example.json:4 LIGHTTRY_LANGUAGE_MODEL nvidia/Nemotron-3_5-Lightning; Cosmos inference code + third_party/Cosmos-LICENSE"
+  },
+  "R5": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "public GitHub repo (private=false)"
+  },
+  "R6": {
+   "label": "pass",
+   "confidence": "low",
+   "evidence": "large codebase (start.py, project/, cloud/, deploy/, requirements); README says weights and sample photos not bundled and GPU generation needs private config"
+  },
+  "R7": {
+   "label": "fail",
+   "confidence": "high",
+   "evidence": "no LICENSE at repo root; GET repos/.../license -> 404 (only third_party/Cosmos-LICENSE)"
+  },
+  "R8": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "README.md 'Run locally' with venv, pip install -r requirements-cpu.txt, start.py command and walkthrough"
+  },
+  "R9": {
+   "label": "fail",
+   "confidence": "low",
+   "evidence": "README.md:5-6 only says 'built around NVIDIA Cosmos and Nemotron, with GPU execution on Nebius'; no Token Factory mention or how Nemotron is used/accelerated"
+  }
+ },
+ "Naren192006/Nebius-Hackathon": {
+  "R1": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "backend/app/config.py:22 DEFAULT_BASE_URL https://api.tokenfactory.nebius.com/v1/; backend/app/llm.py:77 base_url=config.base_url()"
+  },
+  "R2": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "backend/.env.example:8-10 nvidia/nvidia-nemotron-3-nano-30b-a3b, nvidia/nemotron-3-super-120b-a12b, nvidia/Nemotron-3-Ultra-550b-a55b"
+  },
+  "R5": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "public GitHub repo (private=false)"
+  },
+  "R6": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "backend/app, trustrouter/verifier, frontend/, benchmark/, Dockerfile, docker-compose, tests all present"
+  },
+  "R7": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "GitHub license API spdx_id=MIT"
+  },
+  "R8": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "README.md 'Setup (5 steps)' plus Docker alternative and API/benchmark usage"
+  },
+  "R9": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "README.md 'How Nemotron and Nebius Token Factory are used' incl. 'Where Token Factory helped' paragraph"
+  }
+ },
+ "akashkolte/nebius_hackathon": {
+  "R1": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "src/config.ts:43 baseUrl default https://api.tokenfactory.nebius.com/v1; src/nebius.ts NebiusClient"
+  },
+  "R2": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "src/models.ts:27-28 nvidia/Nemotron-3-Ultra-550b-a55b, nvidia/nemotron-3-super-120b-a12b in default roster"
+  },
+  "R5": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "public GitHub repo (private=false)"
+  },
+  "R6": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "src/, public/, test/, demo/sample-app, Dockerfile, package.json, .env.example all present"
+  },
+  "R7": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "GitHub license API spdx_id=Apache-2.0"
+  },
+  "R8": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "README.md 'Try it yourself' with Docker and Node.js options, .env setup, smoke test"
+  },
+  "R9": {
+   "label": "pass",
+   "confidence": "low",
+   "evidence": "README describes Nemotron as default agent model and router/agent on Token Factory (How it works), but no explicit 'how Token Factory accelerated workflow' statement"
+  }
+ },
+ "kashu94/crewops-nebius-nvidia-hackathon": {
+  "R1": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "src/crewops/agent/nebius.py:32 DEFAULT_BASE_URL https://api.tokenfactory.nebius.com/v1/; src/crewops/config.py:35"
+  },
+  "R2": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "src/crewops/config.py:36-38 nvidia/Nemotron-3_5-Lightning for router/advisor/explainer"
+  },
+  "R5": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "public GitHub repo (private=false)"
+  },
+  "R6": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "src/ (125 files), web/, tv/, infra/ CDK, data/seed, tests/ (58), pyproject+uv.lock present; deployment needs an AWS account"
+  },
+  "R7": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "GitHub license API spdx_id=MIT"
+  },
+  "R8": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "README.md 'Getting started', 'Deploying' (scripts/cdk.sh), Settings table, key setup"
+  },
+  "R9": {
+   "label": "pass",
+   "confidence": "high",
+   "evidence": "README.md 'Nebius x NVIDIA: what runs where' table + explanation of Token Factory client swap and Nemotron roles"
+  }
  }
 }

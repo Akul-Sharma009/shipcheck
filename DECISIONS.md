@@ -122,6 +122,12 @@ Decision: after the model's verdict, a deterministic check (`judge.check_usage`)
 Evidence: on the demo repo, the model returned R1/R2 as unclear and the README-highlight requirement as a false PASS, although app.py calls gpt-4o-mini. Eval rerun with the change: ShipCheck unchanged at 28/28, 0% false passes; every prediction identical to before.
 Revisit if: an eval repo that sets its model only through an env var not in any selected file gets downgraded.
 
+## Expanded eval: 9 repos, 63 labels
+Status: TESTED (30 Oct ~10 PM)
+Decision: added 5 more real entries, labeled blind by an Opus agent (GitHub API only, never saw ShipCheck). Report both runs and every error; never edit labels after seeing results.
+Evidence: final run: ShipCheck 92% accuracy, 0.90 macro-F1, 100% on the 55 high-confidence labels; one model call 90% / 0.84 / 95%; keyword 81%. False-pass rate across all labels is a tie with one model call (10–20% for both across runs). Run 1 exposed two bugs (bare "## Run" heading; a pass downgraded when a file's Nano summary failed), fixed in the shipped code.
+Revisit if: a larger or human-labeled set shows ShipCheck's false-pass rate above one model call's.
+
 ## Open questions
 - Demo lead (red-team): a LICENSE with modified MIT text. GitHub reports NOASSERTION, so the About panel shows no license, while a keyword check or a chatbot would say PASS. Needs a small public demo repo; pre-record the rerun, because GitHub's license detection can lag after a push.
 - What does ShipCheck do concretely that SubmitGuard, Hackverify and the others don't? The demo must show it.
