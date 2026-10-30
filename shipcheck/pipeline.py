@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Optional
 
 from shipcheck.evidence import gather_evidence, grep_hits
-from shipcheck.judge import judge
+from shipcheck.judge import judge, mark_required
 from shipcheck.repo import deterministic_checks, ingest
 from shipcheck.rules import get_rules
 from shipcheck.schemas import Report, Rules
@@ -30,6 +30,7 @@ def run(hackathon_url: str, repo_url: str, pasted_rules: str = "", rules: Option
     say("Reading the repo (GitHub API)…")
     facts, readme, files = ingest(repo_url)
     checks = deterministic_checks(facts, rules)
+    mark_required(rules, checks)
 
     say(f"Summarizing {len(files)} files in parallel (Nemotron Nano)…")
     evidence = gather_evidence(files, stats)

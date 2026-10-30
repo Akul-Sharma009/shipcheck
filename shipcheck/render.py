@@ -19,7 +19,7 @@ def to_fix(report: Report) -> List[Tuple[str, str, str, str]]:
     # A check that already decided a requirement (its id leads that verdict's evidence) is listed once, there.
     covered = {e.split(":", 1)[0] for v in report.verdicts if v.status in ("fail", "unclear") for e in v.evidence}
     items = [(c.status, c.id, c.name, c.fix or "") for c in report.checks
-             if c.status in ("fail", "unclear") and c.id not in covered]
+             if c.status in ("fail", "unclear") and c.required and c.id not in covered]
     items += [(v.status, v.requirement_id, reqs.get(v.requirement_id, ""), v.fix or "")
               for v in report.verdicts if v.status in ("fail", "unclear")]
     return sorted(items, key=lambda x: x[0] != "fail")

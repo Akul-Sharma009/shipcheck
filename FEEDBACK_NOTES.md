@@ -18,5 +18,6 @@ Format: date/time SGT · tool · what happened · impact · suggestion.
 - 30 Oct 8:40 PM · Cost per full run (17 requirements, 26 files): Nano 26 calls, ~65K in / 3.6K out; Super 2 calls, ~20K in / ~3.8K out; about 37 s wall time.
 
 ## Tavily
+- 30 Oct 8:25 PM · Positive: the same Extract + cleaning worked unchanged on two other Devpost hackathons (PayPal AI, Atlassian Codegeist). Both pages were extracted, and Super produced correct dates, requirements and criteria in about 5 s each.
 - 30 Oct 7:50 PM · Extracting the Devpost overview + rules in one call worked first time (10K + 40K chars). About 6K chars of each page was Devpost's site navigation, repeated twice per page, above the actual content. Dropping everything above the first H1 plus deduplicating lines removed it. · Suggest an `extract_depth`/"main content only" mode that drops site chrome.
 - 30 Oct, pre-flight · **Extract on the Devpost rules page works (~40K chars) but includes markdown and image noise** (image links, nav, badges). · It inflates tokens sent to the LLM. · Suggest a "main content only" or "strip images/links" option on extract.

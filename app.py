@@ -125,6 +125,10 @@ def render(report: Report) -> None:
     with tabs[1]:
         st.caption("Facts from the GitHub API. No AI involved; these override the model.")
         for ch in report.checks:
+            if not ch.required:
+                st.markdown(f":gray-background[**INFO**] &nbsp; **{ch.id}** {ch.name} "
+                            f":gray[(not required by this hackathon: {ch.status})]")
+                continue
             st.markdown(f"{BADGE[ch.status]} &nbsp; **{ch.id}** {ch.name}")
             st.caption(md("; ".join(ch.evidence)) + (f"  \nFix: {md(ch.fix)}" if ch.fix else ""))
     with tabs[2]:

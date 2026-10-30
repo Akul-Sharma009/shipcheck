@@ -41,16 +41,31 @@ PER-FILE EVIDENCE:
 Return one verdict per requirement id: {ids}"""
 
 
+def links(req_text: str, category: str) -> List[str]:
+    """Deterministic checks that bear on a requirement."""
+    t = req_text.lower()
+    out = []
+    if "public" in t:
+        out.append("D1")
+    if category == "license" or "license" in t:
+        out.append("D2")
+    if category == "readme" or "readme" in t:
+        out.append("D3")
+        if re.search(r"setup|install|run", t):
+            out.append("D4")
+    return out
+
+
+def mark_required(rules: Rules, checks: List[Check]) -> None:
+    """Repo checks only count if this hackathon's rules ask for them (D5, the submission window, always counts)."""
+    needed = {"D5"} | {d for r in rules.requirements for d in links(r.text, r.category)}
+    for c in checks:
+        c.required = c.id in needed
+
+
 def _linked_check(req_text: str, category: str, checks: Dict[str, Check]) -> Optional[Check]:
     """The deterministic check that decides a requirement: any linked failing check wins; license decides both ways."""
-    t = req_text.lower()
-    linked = []
-    if category == "repo" or "public" in t:
-        linked.append("D1")
-    if category == "license" or "license" in t:
-        linked.append("D2")
-    if category == "readme" and re.search(r"setup|install|run", t):
-        linked.append("D4")
+    linked = [d for d in links(req_text, category) if d != "D3"]
     found = [checks[i] for i in linked if i in checks]
     failing = [c for c in found if c.status == "fail"]
     if failing:

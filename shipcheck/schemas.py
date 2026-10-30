@@ -59,6 +59,7 @@ class Check(BaseModel):
     status: Status
     evidence: List[str]
     fix: Optional[str] = None
+    required: bool = True  # False: this hackathon's rules don't ask for it (shown as info only)
 
 
 class Verdict(BaseModel):
