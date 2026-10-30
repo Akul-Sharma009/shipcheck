@@ -2,6 +2,7 @@
 import streamlit as st
 
 from shipcheck import config, guard
+from shipcheck.drafts import draft_readme_section, is_readme_fix
 from shipcheck.llm import LLMError
 from shipcheck.pipeline import PipelineError, run
 from shipcheck.render import LABEL, counts, to_fix, to_markdown
@@ -81,6 +82,33 @@ def check(hackathon_url: str, repo_url: str, pasted: str, video_url: str, descri
     st.session_state.report = report
 
 
+# ---------- fix drafts ----------
+MAX_DRAFTS_PER_SESSION = 6
+
+
+def draft_box(report: Report, req_id: str) -> None:
+    drafts = st.session_state.setdefault("drafts", {})
+    key = f"{report.facts.head_sha}_{req_id}"
+    if key not in drafts:
+        if len(drafts) >= MAX_DRAFTS_PER_SESSION or not config.LIVE:
+            return
+        if not st.button("✍️ Draft this README section for me", key=f"draft_{key}"):
+            return
+        with st.spinner("Writing it from your repo's evidence (Nemotron Super)…"):
+            try:
+                d = draft_readme_section(report, req_id)
+            except LLMError:
+                d = None
+        if not d:
+            st.warning("Couldn't draft this one right now. Try again in a minute.")
+            return
+        drafts[key] = d
+    d = drafts[key]
+    st.caption(f"Draft for **{md(d.heading)}**, built only from files ShipCheck read. Check it, fill any "
+               "<TODO>s, then paste it into your README.")
+    st.code(d.markdown, language="markdown")
+
+
 # ---------- report card ----------
 def render(report: Report) -> None:
     f, rules = report.facts, report.rules
@@ -112,6 +140,8 @@ def render(report: Report) -> None:
                 st.markdown(f"{BADGE[status]} &nbsp; **{ident}** {md(problem)}")
                 if fix:
                     st.markdown(f"**Fix:** {md(fix)}")
+                if is_readme_fix(report, ident) and report.evidence:
+                    draft_box(report, ident)
 
     tabs = st.tabs(["Requirements", "Repo checks", "Confirm yourself", "How it was checked"])
     with tabs[0]:

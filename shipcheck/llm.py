@@ -40,7 +40,7 @@ def get_client() -> OpenAI:
 
 
 _THINK = re.compile(r"<think>.*?</think>", re.S)
-_FENCE = re.compile(r"```(?:json)?\s*(.*?)```", re.S)
+_FENCE = re.compile(r"^```(?:json)?\s*(.*)```$", re.S)  # only a fence wrapping the whole answer
 
 
 def _clean(text: str) -> str:
@@ -48,7 +48,8 @@ def _clean(text: str) -> str:
     text = _THINK.sub("", text or "")
     if "</think>" in text:
         text = text.split("</think>", 1)[1]
-    m = _FENCE.search(text)
+    text = text.strip()
+    m = _FENCE.match(text)
     if m:
         text = m.group(1)
     i, j = text.find("{"), text.rfind("}")
