@@ -1,8 +1,7 @@
 name: ShipCheck (self)
+# Manual only: needs the NEBIUS_API_KEY secret, and each run costs Token Factory credits.
 on:
   workflow_dispatch:
-  push:
-    branches: [master]
 jobs:
   shipcheck:
     runs-on: ubuntu-latest
