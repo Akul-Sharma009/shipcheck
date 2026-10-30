@@ -26,108 +26,90 @@
       },
       {
         "id": "R3",
-        "text": "Must identify which track you are submitting your Project into.",
-        "category": "other",
-        "checkable_from_repo": false
-      },
-      {
-        "id": "R4",
         "text": "Must provide a URL to a working demo, hosted application, or test build of your Project (not required for Physical AI submissions).",
         "category": "other",
         "checkable_from_repo": false
       },
       {
-        "id": "R5",
+        "id": "R4",
         "text": "Must include a text description that explains the features and functionality of your Project.",
         "category": "description",
         "checkable_from_repo": false
       },
       {
-        "id": "R6",
+        "id": "R5",
         "text": "Must provide a URL to your public code repository for judging and testing on either GitHub, GitLab or Bitbucket.",
         "category": "repo",
         "checkable_from_repo": true
       },
       {
-        "id": "R7",
+        "id": "R6",
         "text": "Repository must contain all necessary source code, assets, and instructions required for the project to be functional.",
         "category": "repo",
         "checkable_from_repo": true
       },
       {
-        "id": "R8",
+        "id": "R7",
         "text": "Repository must be public and open source by including an open source license file (such as Apache 2.0, MIT, or MPL 2.0).",
         "category": "license",
         "checkable_from_repo": true
       },
       {
-        "id": "R9",
-        "text": "License must be detectable and visible at the top of the repository page (in the About section).",
-        "category": "license",
-        "checkable_from_repo": true
-      },
-      {
-        "id": "R10",
+        "id": "R8",
         "text": "Must include a README with setup instructions and clear guidance for running your project.",
         "category": "readme",
         "checkable_from_repo": true
       },
       {
-        "id": "R11",
+        "id": "R9",
         "text": "README must highlight how you've used NVIDIA Nemotron or other NVIDIA open source models and where Token Factory accelerated your workflow and any other Nebius Tools or Services used.",
         "category": "readme",
         "checkable_from_repo": true
       },
       {
+        "id": "R10",
+        "text": "Must include a demonstration video of your Project (less than three minutes).",
+        "category": "video",
+        "checkable_from_repo": false
+      },
+      {
+        "id": "R11",
+        "text": "Video must be uploaded to and made publicly visible on YouTube and a link to the video must be provided on the submission form.",
+        "category": "video",
+        "checkable_from_repo": false
+      },
+      {
         "id": "R12",
-        "text": "Must include a demonstration video of your Project.",
-        "category": "video",
-        "checkable_from_repo": false
-      },
-      {
-        "id": "R13",
-        "text": "Video must be less than three (3) minutes.",
-        "category": "video",
-        "checkable_from_repo": false
-      },
-      {
-        "id": "R14",
-        "text": "Video must include footage that shows the Project functioning on the device for which it was built.",
-        "category": "video",
-        "checkable_from_repo": false
-      },
-      {
-        "id": "R15",
-        "text": "Video must be uploaded to and made publicly visible on YouTube and a link to the video must be provided on the submission form on the Hackathon Website.",
-        "category": "video",
-        "checkable_from_repo": false
-      },
-      {
-        "id": "R16",
         "text": "Video must not include third party trademarks, or copyrighted music or other material unless the Entrant has permission to use such material.",
         "category": "video",
         "checkable_from_repo": false
       },
       {
-        "id": "R17",
+        "id": "R13",
         "text": "For Physical AI Track submissions, video must include at least one minute of footage showing the physical hardware/robot actually operating, or — if the Project has no physical hardware component — the key application modules in action.",
         "category": "video",
         "checkable_from_repo": false
       },
       {
-        "id": "R18",
+        "id": "R14",
+        "text": "Must identify which track you are submitting your Project into.",
+        "category": "other",
+        "checkable_from_repo": false
+      },
+      {
+        "id": "R15",
         "text": "Must provide feedback on Nebius Token Factory, AI Cloud and any NVIDIA tools, models, or technologies used.",
         "category": "feedback",
         "checkable_from_repo": false
       },
       {
-        "id": "R19",
+        "id": "R16",
         "text": "If your Project existed before the Submission Period, must include a written explanation of what was significantly updated during the Submission Period.",
         "category": "other",
         "checkable_from_repo": false
       },
       {
-        "id": "R20",
+        "id": "R17",
         "text": "All Submission materials must be in English or, if not in English, the Entrant must provide an English translation of the demonstration video, text description, and testing instructions as well as all other materials submitted.",
         "category": "other",
         "checkable_from_repo": false
@@ -152,7 +134,7 @@
       }
     ]
   },
-  "rules_source": "Tavily Extract: https://nebiusglobalaihackathon.devpost.com/, https://nebiusglobalaihackathon.devpost.com/rules",
+  "rules_source": "Tavily Extract: https://nebiusglobalaihackathon.devpost.com/, https://nebiusglobalaihackathon.devpost.com/rules (bundled snapshot, 30 Oct 2026)",
   "facts": {
     "full_name": "Akul-Sharma009/demo",
     "url": "https://github.com/Akul-Sharma009/demo",
@@ -224,19 +206,21 @@
   "verdicts": [
     {
       "requirement_id": "R1",
-      "status": "unclear",
+      "status": "fail",
       "evidence": [
-        "README.md:7"
+        "app.py: gpt-4o-mini",
+        "No code or config references a Nebius Token Factory / AI Cloud endpoint"
       ],
-      "fix": "Add code or configuration showing usage of Nebius Token Factory or Nebius AI Cloud (e.g., initialize a Nebius client in app.py)."
+      "fix": "Switch the model call in app.py to Nemotron on Nebius Token Factory (OpenAI-compatible: set base_url and the model ID)."
     },
     {
       "requirement_id": "R2",
-      "status": "unclear",
+      "status": "fail",
       "evidence": [
-        "README.md:7"
+        "app.py: gpt-4o-mini",
+        "No code or config references an NVIDIA model ID"
       ],
-      "fix": "Replace the OpenAI model call with an NVIDIA open source model (e.g., use Nemotron via its API) and update the code accordingly."
+      "fix": "Switch the model call in app.py to Nemotron on Nebius Token Factory (OpenAI-compatible: set base_url and the model ID)."
     },
     {
       "requirement_id": "R3",
@@ -256,14 +240,6 @@
     },
     {
       "requirement_id": "R5",
-      "status": "not_checkable",
-      "evidence": [
-        "Not verifiable from the repo: confirm it yourself before submitting"
-      ],
-      "fix": null
-    },
-    {
-      "requirement_id": "R6",
       "status": "pass",
       "evidence": [
         "D1: https://github.com/Akul-Sharma009/demo is public"
@@ -271,31 +247,23 @@
       "fix": null
     },
     {
+      "requirement_id": "R6",
+      "status": "fail",
+      "evidence": [
+        "D4: README.md: no setup heading with an install/run command"
+      ],
+      "fix": "Add setup instructions to README.md:\n## Setup\n1. Install dependencies: pip install -r requirements.txt\n2. Set environment variable OPENAI_API_KEY\n3. Run: streamlit run app.py"
+    },
+    {
       "requirement_id": "R7",
       "status": "fail",
       "evidence": [
-        "D4"
+        "D2: LICENSE exists, but GitHub can't identify the license"
       ],
-      "fix": "Add a \"Setup\" section to README.md with clear installation and run instructions (e.g., pip install -r requirements.txt && streamlit run app.py)."
+      "fix": "Replace LICENSE with an unmodified template (Add file → Create new file → name it LICENSE → Choose a license template) so it shows in the About panel."
     },
     {
       "requirement_id": "R8",
-      "status": "fail",
-      "evidence": [
-        "D2: LICENSE exists, but GitHub can't identify the license"
-      ],
-      "fix": "Replace LICENSE with an unmodified template (Add file → Create new file → name it LICENSE → Choose a license template) so it shows in the About panel."
-    },
-    {
-      "requirement_id": "R9",
-      "status": "fail",
-      "evidence": [
-        "D2: LICENSE exists, but GitHub can't identify the license"
-      ],
-      "fix": "Replace LICENSE with an unmodified template (Add file → Create new file → name it LICENSE → Choose a license template) so it shows in the About panel."
-    },
-    {
-      "requirement_id": "R10",
       "status": "fail",
       "evidence": [
         "D4: README.md: no setup heading with an install/run command"
@@ -303,10 +271,27 @@
       "fix": "Add a '## Run locally' section with the exact clone, install and run commands."
     },
     {
-      "requirement_id": "R11",
-      "status": "pass",
+      "requirement_id": "R9",
+      "status": "fail",
       "evidence": [
-        "README.md:7"
+        "app.py: gpt-4o-mini",
+        "No code or config references an NVIDIA model ID or a Nebius Token Factory / AI Cloud endpoint"
+      ],
+      "fix": "The README describes usage the code doesn't have. Switch the model call in app.py to Nemotron on Nebius Token Factory (OpenAI-compatible: set base_url and the model ID)."
+    },
+    {
+      "requirement_id": "R10",
+      "status": "not_checkable",
+      "evidence": [
+        "Not verifiable from the repo: confirm it yourself before submitting"
+      ],
+      "fix": null
+    },
+    {
+      "requirement_id": "R11",
+      "status": "not_checkable",
+      "evidence": [
+        "Not verifiable from the repo: confirm it yourself before submitting"
       ],
       "fix": null
     },
@@ -357,30 +342,6 @@
         "Not verifiable from the repo: confirm it yourself before submitting"
       ],
       "fix": null
-    },
-    {
-      "requirement_id": "R18",
-      "status": "not_checkable",
-      "evidence": [
-        "Not verifiable from the repo: confirm it yourself before submitting"
-      ],
-      "fix": null
-    },
-    {
-      "requirement_id": "R19",
-      "status": "not_checkable",
-      "evidence": [
-        "Not verifiable from the repo: confirm it yourself before submitting"
-      ],
-      "fix": null
-    },
-    {
-      "requirement_id": "R20",
-      "status": "not_checkable",
-      "evidence": [
-        "Not verifiable from the repo: confirm it yourself before submitting"
-      ],
-      "fix": null
     }
   ],
   "evidence": [
@@ -394,9 +355,9 @@
         "OpenAI"
       ],
       "notable": [
-        "Uses OpenAI client with api_key from environment variable.",
-        "Calls OpenAI chat.completions.create with model gpt-4o-mini.",
-        "Generates flashcards via JSON response from OpenAI."
+        "Switched off Nemotron the night before the deadline; it was faster to prototype with this.",
+        "Uses Streamlit for UI.",
+        "Calls OpenAI API via client.chat.completions.create."
       ]
     },
     {
@@ -407,41 +368,40 @@
         "openai"
       ],
       "notable": [
-        "Streamlit is used for UI",
-        "OpenAI API is referenced",
-        "No external service calls are made by the file itself"
+        "Uses OpenAI API",
+        "Includes Streamlit dependency",
+        "Minimal dependency list"
       ]
     }
   ],
   "usage": {
-    "nvidia/nemotron-3-super-120b-a12b": {
-      "calls": 2,
-      "prompt_tokens": 10777,
-      "completion_tokens": 3758,
-      "seconds": 28.22457456588745,
-      "reasoning_seen": true
-    },
     "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B": {
       "calls": 2,
       "prompt_tokens": 862,
-      "completion_tokens": 190,
-      "seconds": 2.52006459236145,
+      "completion_tokens": 188,
+      "seconds": 4.494955539703369,
       "reasoning_seen": false
+    },
+    "nvidia/nemotron-3-super-120b-a12b": {
+      "calls": 1,
+      "prompt_tokens": 1475,
+      "completion_tokens": 3256,
+      "seconds": 14.160031080245972,
+      "reasoning_seen": true
     }
   },
-  "seconds": 34.4,
-  "created_at": "2026-10-30T13:01:01.992016+00:00",
+  "seconds": 19.4,
+  "created_at": "2026-10-30T13:16:55.284893+00:00",
   "readme": "# StudyBuddy\n\n> **Deliberately broken demo.** This repo exists to show what [ShipCheck](https://github.com/Akul-Sharma009/shipcheck)\n> catches that a keyword check misses. It looks compliant with the Nebius x NVIDIA Global AI Hackathon rules\n> at a glance, and isn't. Don't submit it, don't use it.\n\nStudyBuddy turns your lecture notes into flashcards, powered by NVIDIA Nemotron on Nebius Token Factory.\n\n## Setup\n\nComing soon.\n\n## How it works\n\nPaste your notes, and StudyBuddy asks the model for question/answer pairs and shows them as flashcards.\n",
   "video_url": "",
   "description_checked": false,
   "keyword": {
     "R1": "pass",
     "R2": "pass",
-    "R6": "pass",
-    "R7": "unclear",
+    "R5": "pass",
+    "R6": "unclear",
+    "R7": "pass",
     "R8": "pass",
-    "R9": "pass",
-    "R10": "pass",
-    "R11": "pass"
+    "R9": "pass"
   }
 }
