@@ -126,7 +126,7 @@ I built ShipCheck in the final 8 hours of this hackathon, under exactly the cond
 - **Confirm exact model IDs in the Token Factory model catalog before coding.** Expected:
   - Nano: `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`
   - Super: `nvidia/nemotron-3-super-120b-a12b`
-  - Ultra: `nvidia/nemotron-3-ultra-550b-a55b`
+  - Ultra: `nvidia/Nemotron-3-ultra-550b-a55b`
 
 ### Model routing
 
