@@ -88,8 +88,8 @@ Decision: ship examples/rules/rules_<key>.json (this hackathon's extracted rules
 Evidence: red-team (9 PM). The Devpost page may change or close after the deadline, and judging runs 9–23 Dec. The bundled rules also make reruns consistent and save one Super call (a run is 27 s instead of 37 s).
 Revisit if: the rules page changes materially before the deadline.
 
-## Proposed: cut P1 (Ultra scores, Tavily originality, README generator)
-Status: ASSUMED, awaiting the user's call
+## Cut P1 (Ultra scores, Tavily originality, README generator)
+Status: DECIDED by the user, 30 Oct ~9:20 PM
 Decision: spend the remaining time on deploy, the 3-repo eval, README, video and submission instead of P1.
 Evidence: red-team. Ultra criterion scores invite the "invented score" trap. Tavily Extract is already a runtime call, so the bonus doesn't need originality search. Design and evidence matter more than another feature.
 Revisit if: everything else is done before 11 PM.
