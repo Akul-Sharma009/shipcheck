@@ -13,7 +13,7 @@ Paste a hackathon URL and your GitHub repo. In about 30 seconds ShipCheck gives 
 
 [![ShipCheck report on a deliberately broken demo repo](docs/screenshot.png)](https://shipcheck.streamlit.app/?report=ex-demo-broken)
 
-*A report on [a deliberately broken demo repo](https://github.com/Akul-Sharma009/demo). Its LICENSE file exists but is modified MIT, so GitHub can't detect it, and its README has a Setup heading with no commands. A keyword check passes all three; ShipCheck fails them. [Open this report](https://shipcheck.streamlit.app/?report=ex-demo-broken).*
+*A report on [a deliberately broken demo repo](https://github.com/Akul-Sharma009/demo/tree/6d7d6d5). Its LICENSE file exists but is modified MIT, so GitHub can't detect it, and its README has a Setup heading with no commands. A keyword check passes all three; ShipCheck fails them. [Open this report](https://shipcheck.streamlit.app/?report=ex-demo-broken).*
 
 ## What it does
 
