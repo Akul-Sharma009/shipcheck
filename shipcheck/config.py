@@ -54,6 +54,8 @@ MAX_TOKENS_CEILING = _int("MAX_TOKENS_CEILING", 12000)
 LLM_TIMEOUT_S = _int("LLM_TIMEOUT_S", 120)
 # Send enable_thinking=false to Nano (per-file summaries don't need reasoning).
 NANO_DISABLE_THINKING = _bool("NANO_DISABLE_THINKING", True)
+# Rules extraction is transcription, not reasoning: thinking off was 6x faster at similar quality.
+RULES_THINKING = _bool("RULES_THINKING", False)
 
 # ---------- repo ingestion limits ----------
 MAX_FILES = _int("MAX_FILES", 40)

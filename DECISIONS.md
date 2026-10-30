@@ -39,6 +39,24 @@ Decision: send `chat_template_kwargs.enable_thinking=false` to Nano (`NANO_DISAB
 Evidence: smoke test 30 Oct, same prompt with valid JSON both ways: 227 completion tokens in 6.4 s with thinking on, 25 tokens in 3.7 s with it off.
 Revisit if: per-file evidence misses model or API usage that a thinking-on run catches.
 
+## Super thinking off for rules extraction
+Status: TESTED (one hackathon; cost/latency plus a manual read of the output)
+Decision: `RULES_THINKING=false`; send `enable_thinking=false` for rules → Rules.
+Evidence: 30 Oct, same 40K-char page text. Thinking off: 11 s, 2.5K output tokens, 16 requirements, correct dates. Thinking on: 69 s, 14.3K tokens, 19 requirements; the 3 extra were legal terms the prompt says to skip.
+Revisit if: rules for another hackathon miss requirements that thinking-on catches.
+
+## Rules are cached per hackathon URL
+Status: ASSUMED
+Decision: extract rules once per hackathon URL, then reuse them across repos and reruns (in guard.py).
+Evidence: three extractions of the same page gave 16, 17 and 19 requirements. Reruns of the demo must not change the checklist (the "add license, rerun, goes green" moment). Caching also saves about 10 s and one Super call per run.
+Revisit if: rules pages change during a hackathon (add a TTL).
+
+## Private repos are refused, never ingested
+Status: ASSUMED
+Decision: if GitHub reports the repo as private, stop before reading any contents.
+Evidence: the server's GITHUB_TOKEN may be able to read the owner's private repos. Without this check, any visitor could make the public app summarize them.
+Revisit if: never. Also use a fine-grained token limited to public repositories.
+
 ## Cost caps are best effort; the kill switch is the reliable control
 Status: ASSUMED
 Decision: a disk JSON result cache, a file-backed daily counter, a per-session cap, and `SHIPCHECK_LIVE=false` to serve only `examples/`.
@@ -49,6 +67,7 @@ Revisit if: Token Factory offers a spend limit (then rely on it), or traffic dur
 Status: ASSUMED
 Decision: pin `requirements.txt` to the versions verified locally.
 Evidence: Streamlit Cloud reinstalls the latest versions on reboot, and the demo must work until 23 Dec.
+Evidence (30 Oct): every module imports under Python 3.11.17 with the pinned requirements (uvx).
 Revisit if: a pinned version fails to install on Streamlit Cloud's Python 3.11.
 
 ## Open questions
@@ -58,6 +77,6 @@ Revisit if: a pinned version fails to install on Streamlit Cloud's Python 3.11.
     - GitHub's own license detection and repo facts (visibility, commit dates vs the event window)
     - per-event Devpost rules parsing that marks each item deterministic, LLM-judged or not checkable
     - any accuracy measured on a labeled set
-- Which real gallery repo is the unbiased ground-truth case?
+- Which real gallery repo is the unbiased ground-truth case? For the eval, freeze one Rules extraction and score every method against that same requirement list.
 - The brief's `Rules` schema has no `submission_start`, so "commits within submission period" needs it added. If it's absent, the check is unclear.
 - Does the Token Factory console have a spend limit, or a way to turn off auto top-up? (The user is checking.)

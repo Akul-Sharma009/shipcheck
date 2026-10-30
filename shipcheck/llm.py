@@ -104,18 +104,22 @@ def call_json(model: str, prompt: str, schema: Type[T], max_tokens: int, *, syst
 
     for _ in range(MAX_CALLS):
         content, finish = _complete(model, messages, max_tokens, temperature, thinking, stats)
-        truncated = finish == "length"
-        if truncated:  # reasoning or a long answer ate the budget: allow more next time
+        if finish == "length":
+            # Reasoning or a long answer ate the budget. Retry the same request with more room; showing the
+            # model its own cut-off output would only cost more tokens.
+            if max_tokens >= config.MAX_TOKENS_CEILING:
+                log.warning("%s hit the token ceiling (%d)", model, max_tokens)
+                return None
+            log.warning("%s truncated at %d tokens, retrying with more", model, max_tokens)
             max_tokens = min(max_tokens * 2, config.MAX_TOKENS_CEILING)
+            continue
         if not content.strip():
             log.warning("%s returned empty content (finish=%s)", model, finish)
-            if truncated:
-                continue
             return None
         try:
             return schema.model_validate_json(_clean(content))
         except ValidationError as e:
-            if fixed_once and not truncated:
+            if fixed_once:
                 log.warning("%s output failed validation twice: %s", model, str(e)[:300])
                 return None
             fixed_once = True
