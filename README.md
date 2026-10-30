@@ -185,7 +185,7 @@ The keyword check's false pass was a real entry with a truncated MIT license. Gi
 - **Public GitHub, GitLab.com and Bitbucket Cloud repos, and Devpost hackathons, only.** Self-hosted GitLab is not supported. Bitbucket has no license detection, so ShipCheck matches the root LICENSE text against common licenses itself. Bitbucket's anonymous API limit is low, so ShipCheck reads at most 20 files there, and a busy hour can return "rate limit reached, try again later". Other hackathon platforms work if you paste the rules text.
 - **AI verdicts can be wrong.** They are constrained to cite evidence, but treat "unclear" as "go look". The evaluation above is small (28 labels).
 - **Usage detection reads model IDs and endpoints, not behaviour.** A repo that sets its model only through an environment variable, with no ID in any file ShipCheck reads, gets "unclear" for model usage rather than a pass.
-- **The GitHub Action hasn't run on a real runner yet.** The CLI it wraps is tested; the composite action itself is not.
+- **The GitHub Action hasn't run on a real runner yet.** The CLI it wraps is tested, and the PR-comment script is tested against a mocked `gh`; the composite action end to end is not.
 - **Video checks cover the essentials only:** visibility and length. ShipCheck doesn't watch the content.
 - **Large repos:** at most 40 files (12K characters each) are read, prioritising files that name a platform or model.
 - **Sleeping demo:** the hosted demo runs on Streamlit Community Cloud, which sleeps after inactivity. If you see "This app has gone to sleep", click *Yes, get this app back up* and wait about 30 s.
