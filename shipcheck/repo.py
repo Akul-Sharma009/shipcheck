@@ -147,6 +147,22 @@ def readme_has_setup(readme: str) -> bool:
 
 
 # ---------- ingestion ----------
+def head(repo_url: str) -> Tuple[str, str]:
+    """(full_name, head commit SHA) of the default branch: 2 cheap API calls, used as the cache key."""
+    owner, name = parse_repo_url(repo_url)
+    s = _session()
+    r = _get(s, f"/repos/{owner}/{name}")
+    if r.status_code == 404:
+        raise RepoError(f"Repo {owner}/{name} not found (or private)")
+    r.raise_for_status()
+    repo = r.json()
+    if repo.get("private"):
+        raise RepoError(f"{repo['full_name']} is private. Judges can't see it either: make it public, then rerun.")
+    c = _get(s, f"/repos/{repo['full_name']}/commits/{repo['default_branch']}")
+    c.raise_for_status()
+    return repo["full_name"], c.json()["sha"]
+
+
 def ingest(repo_url: str) -> Tuple[RepoFacts, str, Dict[str, str]]:
     """Returns (facts, README text, {path: content} for selected files). Private repos are not read."""
     owner, name = parse_repo_url(repo_url)

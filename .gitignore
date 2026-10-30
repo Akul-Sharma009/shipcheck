@@ -218,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ShipCheck runtime cache (results, rules, daily usage counter)
+.cache/

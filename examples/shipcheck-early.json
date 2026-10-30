@@ -1,0 +1,344 @@
+{
+ "hackathon_url": "https://nebiusglobalaihackathon.devpost.com/",
+ "repo_url": "https://github.com/Akul-Sharma009/shipcheck",
+ "rules": {
+  "hackathon_name": "Nebius x NVIDIA Global AI Hackathon",
+  "submission_start": "2026-08-26T09:00:00-07:00",
+  "deadline": "2026-10-30T10:00:00-07:00",
+  "tracks": [
+   "Coding and Agentic Engineering Track",
+   "Best Apps and Agents Track",
+   "Personal AI Track",
+   "Physical AI Track"
+  ],
+  "requirements": [
+   {
+    "id": "R1",
+    "text": "Must run on either Nebius Token Factory or Nebius AI Cloud.",
+    "category": "platform",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R2",
+    "text": "Must use at least one NVIDIA open source model.",
+    "category": "model",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R3",
+    "text": "Must provide a URL to a public code repository on GitHub, GitLab, or Bitbucket containing all necessary source code, assets, and instructions.",
+    "category": "repo",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R4",
+    "text": "Repository must include an open source license file (e.g., Apache 2.0, MIT, MPL 2.0) detectable and visible at the top of the repository page.",
+    "category": "license",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R5",
+    "text": "Must include a README with setup instructions and clear guidance for running the project.",
+    "category": "readme",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R6",
+    "text": "README must highlight how NVIDIA Nemotron or other NVIDIA open source models were used, where Token Factory accelerated the workflow, and any other Nebius Tools or Services used.",
+    "category": "readme",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R7",
+    "text": "Must include a text description explaining the features and functionality of the project.",
+    "category": "description",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R8",
+    "text": "Must include a demonstration video less than three minutes, uploaded to YouTube, with a link provided on the submission form.",
+    "category": "video",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R9",
+    "text": "For Physical AI Track: video must include at least one minute of footage showing physical hardware/robot operating, or key application modules in action if no hardware.",
+    "category": "video",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R10",
+    "text": "Must identify which track the project is submitted into.",
+    "category": "other",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R11",
+    "text": "Must provide feedback on Nebius Token Factory, AI Cloud, and any NVIDIA tools, models, or technologies used.",
+    "category": "feedback",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R12",
+    "text": "If project existed before submission period, must include a written explanation of significant updates made during the submission period.",
+    "category": "other",
+    "checkable_from_repo": false
+   }
+  ],
+  "criteria": [
+   {
+    "name": "Technological Implementation",
+    "description": "How well is the project built, and how effectively does it use Nebius Token Factory or AI Cloud model(s), and NVIDIA Nemotron or other NVIDIA open source models as part of the solution?"
+   },
+   {
+    "name": "Design",
+    "description": "Does the project deliver a complete, coherent product experience not just a technical proof of concept?"
+   },
+   {
+    "name": "Potential Impact",
+    "description": "Does the project make a credible, specific case for solving a real problem for a real audience and does the solution actually address it based on what's demonstrated?"
+   },
+   {
+    "name": "Quality of the Idea",
+    "description": "Is this a creative, non-obvious use of Nebius Token Factory or AI Cloud model(s), and NVIDIA Nemotron or other NVIDIA open source models and does the team show genuine understanding of the problem space?"
+   }
+  ]
+ },
+ "rules_source": "Tavily Extract: https://nebiusglobalaihackathon.devpost.com/, https://nebiusglobalaihackathon.devpost.com/rules",
+ "facts": {
+  "full_name": "Akul-Sharma009/shipcheck",
+  "url": "https://github.com/Akul-Sharma009/shipcheck",
+  "is_public": true,
+  "default_branch": "master",
+  "head_sha": "5c99f28045e55a19fc9d95279ca246f2e160485b",
+  "license_spdx": "MIT",
+  "license_file": "LICENSE",
+  "has_readme": true,
+  "readme_path": "README.md",
+  "readme_has_setup": false,
+  "last_commit_iso": "2026-10-30T10:38:33Z",
+  "files_in_tree": 7,
+  "files_considered": 5
+ },
+ "checks": [
+  {
+   "id": "D1",
+   "name": "Repository is public",
+   "status": "pass",
+   "evidence": [
+    "GitHub reports Akul-Sharma009/shipcheck as public"
+   ],
+   "fix": null
+  },
+  {
+   "id": "D2",
+   "name": "Open-source license detected by GitHub",
+   "status": "pass",
+   "evidence": [
+    "GitHub license detection: MIT (LICENSE)"
+   ],
+   "fix": null
+  },
+  {
+   "id": "D3",
+   "name": "README exists",
+   "status": "pass",
+   "evidence": [
+    "README.md"
+   ],
+   "fix": null
+  },
+  {
+   "id": "D4",
+   "name": "README has setup / run instructions",
+   "status": "fail",
+   "evidence": [
+    "README.md: no setup heading with an install/run command"
+   ],
+   "fix": "Add a '## Run locally' section with the exact clone, install and run commands."
+  },
+  {
+   "id": "D5",
+   "name": "Commits during the submission period",
+   "status": "pass",
+   "evidence": [
+    "4 commits between 26 Aug 2026 and 30 Oct 2026; last commit 2026-10-30T10:38:33Z"
+   ],
+   "fix": null
+  }
+ ],
+ "verdicts": [
+  {
+   "requirement_id": "R1",
+   "status": "pass",
+   "evidence": [
+    "app.py:15"
+   ],
+   "fix": null
+  },
+  {
+   "requirement_id": "R2",
+   "status": "pass",
+   "evidence": [
+    "app.py:18"
+   ],
+   "fix": null
+  },
+  {
+   "requirement_id": "R3",
+   "status": "pass",
+   "evidence": [
+    "D1"
+   ],
+   "fix": null
+  },
+  {
+   "requirement_id": "R4",
+   "status": "pass",
+   "evidence": [
+    "D2: GitHub license detection: MIT (LICENSE)"
+   ],
+   "fix": null
+  },
+  {
+   "requirement_id": "R5",
+   "status": "fail",
+   "evidence": [
+    "D4: README.md: no setup heading with an install/run command"
+   ],
+   "fix": "Add a '## Run locally' section with the exact clone, install and run commands."
+  },
+  {
+   "requirement_id": "R6",
+   "status": "fail",
+   "evidence": [
+    "README.md"
+   ],
+   "fix": "README.md: add a section describing how NVIDIA Nemotron models are used via Nebius Token Factory and mention Tavily usage"
+  },
+  {
+   "requirement_id": "R7",
+   "status": "not_checkable",
+   "evidence": [
+    "Not verifiable from the repo: confirm it yourself before submitting"
+   ],
+   "fix": null
+  },
+  {
+   "requirement_id": "R8",
+   "status": "not_checkable",
+   "evidence": [
+    "Not verifiable from the repo: confirm it yourself before submitting"
+   ],
+   "fix": null
+  },
+  {
+   "requirement_id": "R9",
+   "status": "not_checkable",
+   "evidence": [
+    "Not verifiable from the repo: confirm it yourself before submitting"
+   ],
+   "fix": null
+  },
+  {
+   "requirement_id": "R10",
+   "status": "not_checkable",
+   "evidence": [
+    "Not verifiable from the repo: confirm it yourself before submitting"
+   ],
+   "fix": null
+  },
+  {
+   "requirement_id": "R11",
+   "status": "not_checkable",
+   "evidence": [
+    "Not verifiable from the repo: confirm it yourself before submitting"
+   ],
+   "fix": null
+  },
+  {
+   "requirement_id": "R12",
+   "status": "not_checkable",
+   "evidence": [
+    "Not verifiable from the repo: confirm it yourself before submitting"
+   ],
+   "fix": null
+  }
+ ],
+ "evidence": [
+  {
+   "path": "app.py",
+   "purpose": "A Streamlit app that pings the Nemotron Nano model via Nebius Token Factory API and displays a success message.",
+   "models_used": [
+    "get_secret(\"MODEL_NANO\")"
+   ],
+   "apis_called": [
+    "OpenAI"
+   ],
+   "notable": [
+    "reads API key from env",
+    "uses Nebius Token Factory base URL",
+    "caches results in Streamlit session"
+   ]
+  },
+  {
+   "path": "requirements.txt",
+   "purpose": "Enables a Streamlit application that uses OpenAI, Tavily, and other libraries to process data and interact with external APIs.",
+   "models_used": [],
+   "apis_called": [
+    "OpenAI",
+    "Tavily"
+   ],
+   "notable": [
+    "Uses python-dotenv for environment variables",
+    "Caches results with requests",
+    "Handles API keys via env"
+   ]
+  },
+  {
+   "path": "preflight.py",
+   "purpose": "One sentence.",
+   "models_used": [
+    "nvidia/nemotron-3-super-120b-a12b"
+   ],
+   "apis_called": [
+    "Nebius Token Factory",
+    "Tavily",
+    "GitHub API"
+   ],
+   "notable": [
+    "reads API key from env",
+    "caches results",
+    "handles JSON output"
+   ]
+  },
+  {
+   "path": "BRIEF.md",
+   "purpose": "Setup and run instructions for the project",
+   "models_used": [],
+   "apis_called": [],
+   "notable": [
+    "reads API key from env",
+    "caches results"
+   ]
+  }
+ ],
+ "usage": {
+  "nvidia/nemotron-3-super-120b-a12b": {
+   "calls": 2,
+   "prompt_tokens": 12901,
+   "completion_tokens": 2520,
+   "seconds": 35.73807501792908,
+   "reasoning_seen": true
+  },
+  "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B": {
+   "calls": 5,
+   "prompt_tokens": 10182,
+   "completion_tokens": 607,
+   "seconds": 10.014096736907959,
+   "reasoning_seen": false
+  }
+ },
+ "seconds": 44.5,
+ "created_at": "2026-10-30T11:57:27.119272+00:00"
+}

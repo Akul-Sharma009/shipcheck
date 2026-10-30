@@ -1,0 +1,136 @@
+{
+ "rules": {
+  "hackathon_name": "Nebius x NVIDIA Global AI Hackathon",
+  "submission_start": "2026-08-26T09:00:00-07:00",
+  "deadline": "2026-10-30T10:00:00-07:00",
+  "tracks": [
+   "Coding and Agentic Engineering Track",
+   "Best Apps and Agents Track",
+   "Personal AI Track",
+   "Physical AI Track"
+  ],
+  "requirements": [
+   {
+    "id": "R1",
+    "text": "Must run on either Nebius Token Factory or Nebius AI Cloud.",
+    "category": "platform",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R2",
+    "text": "Must use at least one NVIDIA open source model.",
+    "category": "model",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R3",
+    "text": "Must provide a URL to a working demo, hosted application, or test build of your Project (not required for Physical AI submissions).",
+    "category": "other",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R4",
+    "text": "Must include a text description that explains the features and functionality of your Project.",
+    "category": "description",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R5",
+    "text": "Must provide a URL to your public code repository for judging and testing on either GitHub, GitLab or Bitbucket.",
+    "category": "repo",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R6",
+    "text": "Repository must contain all necessary source code, assets, and instructions required for the project to be functional.",
+    "category": "repo",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R7",
+    "text": "Repository must be public and open source by including an open source license file (such as Apache 2.0, MIT, or MPL 2.0).",
+    "category": "license",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R8",
+    "text": "Must include a README with setup instructions and clear guidance for running your project.",
+    "category": "readme",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R9",
+    "text": "README must highlight how you've used NVIDIA Nemotron or other NVIDIA open source models and where Token Factory accelerated your workflow and any other Nebius Tools or Services used.",
+    "category": "readme",
+    "checkable_from_repo": true
+   },
+   {
+    "id": "R10",
+    "text": "Must include a demonstration video of your Project (less than three minutes).",
+    "category": "video",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R11",
+    "text": "Video must be uploaded to and made publicly visible on YouTube and a link to the video must be provided on the submission form.",
+    "category": "video",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R12",
+    "text": "Video must not include third party trademarks, or copyrighted music or other material unless the Entrant has permission to use such material.",
+    "category": "video",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R13",
+    "text": "For Physical AI Track submissions, video must include at least one minute of footage showing the physical hardware/robot actually operating, or \u2014 if the Project has no physical hardware component \u2014 the key application modules in action.",
+    "category": "video",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R14",
+    "text": "Must identify which track you are submitting your Project into.",
+    "category": "other",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R15",
+    "text": "Must provide feedback on Nebius Token Factory, AI Cloud and any NVIDIA tools, models, or technologies used.",
+    "category": "feedback",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R16",
+    "text": "If your Project existed before the Submission Period, must include a written explanation of what was significantly updated during the Submission Period.",
+    "category": "other",
+    "checkable_from_repo": false
+   },
+   {
+    "id": "R17",
+    "text": "All Submission materials must be in English or, if not in English, the Entrant must provide an English translation of the demonstration video, text description, and testing instructions as well as all other materials submitted.",
+    "category": "other",
+    "checkable_from_repo": false
+   }
+  ],
+  "criteria": [
+   {
+    "name": "Technological Implementation",
+    "description": "How well is the project built, and how effectively does it use Nebius Token Factory or AI Cloud model(s), and NVIDIA Nemotron or other NVIDIA open source models as part of the solution?"
+   },
+   {
+    "name": "Design",
+    "description": "Does the project deliver a complete, coherent product experience not just a technical proof of concept?"
+   },
+   {
+    "name": "Potential Impact",
+    "description": "Does the project make a credible, specific case for solving a real problem for a real audience and does the solution actually address it based on what's demonstrated?"
+   },
+   {
+    "name": "Quality of the Idea",
+    "description": "Is this a creative, non-obvious use of Nebius Token Factory or AI Cloud model(s), and NVIDIA Nemotron or other NVIDIA open source models and does the team show genuine understanding of the problem space?"
+   }
+  ]
+ },
+ "source": "Tavily Extract: https://nebiusglobalaihackathon.devpost.com/, https://nebiusglobalaihackathon.devpost.com/rules (bundled snapshot, 30 Oct 2026)"
+}

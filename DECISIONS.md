@@ -82,7 +82,20 @@ Evidence: Streamlit Cloud reinstalls the latest versions on reboot, and the demo
 Evidence (30 Oct): every module imports under Python 3.11.17 with the pinned requirements (uvx).
 Revisit if: a pinned version fails to install on Streamlit Cloud's Python 3.11.
 
+## Bundled rules for this hackathon; example report on first load
+Status: ASSUMED
+Decision: ship examples/rules/rules_<key>.json (this hackathon's extracted rules, 30 Oct) and examples/*.json reports. The landing page shows an example with zero API calls.
+Evidence: red-team (9 PM). The Devpost page may change or close after the deadline, and judging runs 9–23 Dec. The bundled rules also make reruns consistent and save one Super call (a run is 27 s instead of 37 s).
+Revisit if: the rules page changes materially before the deadline.
+
+## Proposed: cut P1 (Ultra scores, Tavily originality, README generator)
+Status: ASSUMED, awaiting the user's call
+Decision: spend the remaining time on deploy, the 3-repo eval, README, video and submission instead of P1.
+Evidence: red-team. Ultra criterion scores invite the "invented score" trap. Tavily Extract is already a runtime call, so the bonus doesn't need originality search. Design and evidence matter more than another feature.
+Revisit if: everything else is done before 11 PM.
+
 ## Open questions
+- Demo lead (red-team): a LICENSE with modified MIT text. GitHub reports NOASSERTION, so the About panel shows no license, while a keyword check or a chatbot would say PASS. Needs a small public demo repo; pre-record the rerun, because GitHub's license detection can lag after a push.
 - What does ShipCheck do concretely that SubmitGuard, Hackverify and the others don't? The demo must show it.
   - Research (30 Oct): AI Lakaton is the closest prior art. It extracts requirements from the rules, gives verdicts that cite a quote or path, deterministically checks that the cited text exists, and has a keyword fallback.
   - Gaps no tool documents:
