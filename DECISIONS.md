@@ -34,10 +34,10 @@ Evidence: in pre-flight, Nano and Super both returned valid JSON from prompt ins
 Revisit if: parse or validation failures show up in more than a few calls per run.
 
 ## Nano reasoning off for per-file extraction
-Status: ASSUMED (pending smoke test)
-Decision: send `chat_template_kwargs.enable_thinking=false` to Nano if Token Factory accepts it.
-Evidence: reasoning tokens consume max_tokens and cost money; file summaries don't need reasoning.
-Revisit if: the smoke test shows it's rejected or ignored, or output quality drops.
+Status: TESTED (cost/latency only; quality not yet compared on real files)
+Decision: send `chat_template_kwargs.enable_thinking=false` to Nano (`NANO_DISABLE_THINKING`, default true).
+Evidence: smoke test 30 Oct, same prompt with valid JSON both ways: 227 completion tokens in 6.4 s with thinking on, 25 tokens in 3.7 s with it off.
+Revisit if: per-file evidence misses model or API usage that a thinking-on run catches.
 
 ## Cost caps are best effort; the kill switch is the reliable control
 Status: ASSUMED
@@ -53,6 +53,11 @@ Revisit if: a pinned version fails to install on Streamlit Cloud's Python 3.11.
 
 ## Open questions
 - What does ShipCheck do concretely that SubmitGuard, Hackverify and the others don't? The demo must show it.
+  - Research (30 Oct): AI Lakaton is the closest prior art. It extracts requirements from the rules, gives verdicts that cite a quote or path, deterministically checks that the cited text exists, and has a keyword fallback.
+  - Gaps no tool documents:
+    - GitHub's own license detection and repo facts (visibility, commit dates vs the event window)
+    - per-event Devpost rules parsing that marks each item deterministic, LLM-judged or not checkable
+    - any accuracy measured on a labeled set
 - Which real gallery repo is the unbiased ground-truth case?
 - The brief's `Rules` schema has no `submission_start`, so "commits within submission period" needs it added. If it's absent, the check is unclear.
 - Does the Token Factory console have a spend limit, or a way to turn off auto top-up? (The user is checking.)
