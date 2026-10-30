@@ -178,7 +178,7 @@ The keyword check's false pass was a real entry with a truncated MIT license. Gi
 
 ## Limitations
 
-- **Public GitHub, GitLab.com and Bitbucket Cloud repos, and Devpost hackathons, only.** Self-hosted GitLab is not supported. Bitbucket has no license detection, so ShipCheck matches the root LICENSE text against common licenses itself. Other hackathon platforms work if you paste the rules text.
+- **Public GitHub, GitLab.com and Bitbucket Cloud repos, and Devpost hackathons, only.** Self-hosted GitLab is not supported. Bitbucket has no license detection, so ShipCheck matches the root LICENSE text against common licenses itself. Bitbucket's anonymous API limit is low, so ShipCheck reads at most 20 files there, and a busy hour can return "rate limit reached, try again later". Other hackathon platforms work if you paste the rules text.
 - **AI verdicts can be wrong.** They are constrained to cite evidence, but treat "unclear" as "go look". The evaluation above is small (28 labels).
 - **Usage detection reads model IDs and endpoints, not behaviour.** A repo that sets its model only through an environment variable, with no ID in any file ShipCheck reads, gets "unclear" for model usage rather than a pass.
 - **The GitHub Action hasn't run on a real runner yet.** The CLI it wraps is tested; the composite action itself is not.
