@@ -8,7 +8,7 @@ Paste a hackathon URL and your GitHub, GitLab or Bitbucket repo. In about 30 sec
 - a ready-to-paste README section for README failures
 
 - **Live demo:** https://shipcheck.streamlit.app
-- **Demo video:** <TODO: YouTube URL>
+- **Demo video:** https://youtu.be/ZQZ9ciCOP5Y
 - **Built for:** Nebius x NVIDIA Global AI Hackathon, *Best Apps and Agents* track
 
 [![ShipCheck report on a deliberately broken demo repo](docs/screenshot.png)](https://shipcheck.streamlit.app/?report=ex-demo-broken)
