@@ -5,7 +5,7 @@ from shipcheck import config, guard
 from shipcheck.drafts import draft_readme_section, is_readme_fix
 from shipcheck.llm import LLMError
 from shipcheck.pipeline import PipelineError, run
-from shipcheck.render import LABEL, counts, to_fix, to_markdown
+from shipcheck.render import LABEL, changes, counts, countdown, to_fix, to_markdown
 from shipcheck.repo import RepoError, head
 from shipcheck.schemas import Report
 
@@ -26,6 +26,20 @@ def code_list(items) -> str:
 
 
 # ---------- running ----------
+def remember(report: Report) -> None:
+    """Keep the last check per repo + hackathon in this session, to show what a new commit fixed."""
+    history = st.session_state.setdefault("history", {})
+    key = (report.facts.full_name, report.hackathon_url)
+    prev = history.get(key)
+    if prev and prev.facts.head_sha != report.facts.head_sha:
+        fixed, broke = changes(prev, report)
+        st.session_state.diff = {"sha": report.facts.head_sha, "prev": prev.facts.head_sha[:7],
+                                 "fixed": fixed, "broke": broke}
+    history[key] = report
+    st.session_state.report = report
+
+
+
 def show_example(reason: str) -> None:
     ex = guard.examples()
     if ex:
@@ -52,7 +66,7 @@ def check(hackathon_url: str, repo_url: str, pasted: str, video_url: str, descri
     key = guard.report_key(sha, rkey, video_url.strip() + "\n" + description.strip())
     cached = guard.get_report(key)
     if cached:
-        st.session_state.report = cached
+        remember(cached)
         st.session_state.notice = f"Already checked commit `{sha[:7]}`: showing the saved result (no new model calls)."
         return
 
@@ -79,7 +93,7 @@ def check(hackathon_url: str, repo_url: str, pasted: str, video_url: str, descri
     if not rules_hit:
         guard.put_rules(rkey, report.rules, report.rules_source)
     guard.put_report(key, report)
-    st.session_state.report = report
+    remember(report)
 
 
 # ---------- fix drafts ----------
@@ -120,6 +134,19 @@ def render(report: Report) -> None:
     st.subheader(f"{f.full_name}")
     st.caption(f"Against **{md(rules.hackathon_name)}** · commit [`{f.head_sha[:7]}`]({f.url}/commit/{f.head_sha}) · "
                f"checked {report.created_at[:16].replace('T', ' ')} UTC")
+    try:
+        tz = st.context.timezone
+    except Exception:
+        tz = None
+    clock = countdown(rules.deadline, tz)
+    if clock:
+        st.markdown(f"⏰ **{clock}**")
+    diff = st.session_state.get("diff")
+    if diff and diff["sha"] == f.head_sha and (diff["fixed"] or diff["broke"]):
+        lines = [f"**Since `{diff['prev']}`:**"]
+        lines += [f"- :green[**FIXED**] {md(x)}" for x in diff["fixed"]]
+        lines += [f"- :red[**NEW PROBLEM**] {md(x)}" for x in diff["broke"]]
+        st.markdown("\n".join(lines))
     if n_fail:
         st.error(f"**{n_fail} {'thing' if n_fail == 1 else 'things'} to fix before you submit.**", icon="🚫")
     elif fixes:
@@ -186,13 +213,13 @@ def render(report: Report) -> None:
                  "Tokens in": u["prompt_tokens"], "Tokens out": u["completion_tokens"]}
                 for m, u in report.usage.items()]
         if rows:
-            st.dataframe(rows, hide_index=True, use_container_width=True)
+            st.dataframe(rows, hide_index=True, width="stretch")
         st.caption(f"Run time {report.seconds:.0f}s. Rerunning the same commit is served from cache.")
         if report.evidence:
             with st.expander(f"Per-file evidence ({len(report.evidence)} files)"):
                 st.dataframe([{"File": e.path, "Purpose": e.purpose, "Calls": ", ".join(e.apis_called),
                                "Models": ", ".join(e.models_used)} for e in report.evidence],
-                             hide_index=True, use_container_width=True)
+                             hide_index=True, width="stretch")
 
     st.download_button("Download report (Markdown)", to_markdown(report),
                        file_name=f"shipcheck-{f.full_name.replace('/', '-')}-{f.head_sha[:7]}.md")
@@ -215,7 +242,7 @@ with st.form("check"):
                                                "(e.g. feedback). Nothing is stored or posted.")
     with st.expander("Rules page won't load? Paste the rules text instead"):
         pasted = st.text_area("Rules text", height=150, label_visibility="collapsed")
-    submitted = st.form_submit_button("Check my submission", type="primary", use_container_width=True)
+    submitted = st.form_submit_button("Check my submission", type="primary", width="stretch")
 
 if submitted:
     if not repo_url.strip():
@@ -250,7 +277,7 @@ with st.sidebar:
     if ex:
         st.markdown("### Example reports")
         for name, rep in ex:
-            if st.button(rep.facts.full_name, key=f"ex_{name}", use_container_width=True):
+            if st.button(rep.facts.full_name, key=f"ex_{name}", width="stretch"):
                 st.session_state.report = rep
                 st.session_state.notice = "Example report."
                 st.rerun()

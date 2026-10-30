@@ -1,5 +1,6 @@
 """One ShipCheck run: rules + repo -> deterministic checks -> Nano evidence -> Super verdicts -> Report."""
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Optional
 
@@ -8,7 +9,7 @@ from shipcheck.judge import judge, mark_required
 from shipcheck.repo import deterministic_checks, ingest
 from shipcheck.rules import get_rules
 from shipcheck.schemas import Report, Rules
-from shipcheck.submission import apply_video, judge_description, video_checks
+from shipcheck.submission import apply_description, apply_video, judge_description, video_checks
 
 
 class PipelineError(Exception):
@@ -38,17 +39,18 @@ def run(hackathon_url: str, repo_url: str, pasted_rules: str = "", rules: Option
     evidence = gather_evidence(files, stats)
     hits = grep_hits(files, readme, facts.readme_path)
 
-    say("Judging each requirement (Nemotron Super)…")
-    verdicts = judge(rules, facts, checks, readme, evidence, hits, stats)
+    say("Judging each requirement (Nemotron Super)" + (" and your Devpost write-up" if description.strip() else "")
+        + "…")
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        desc = ex.submit(judge_description, rules, description, stats)
+        verdicts = judge(rules, facts, checks, readme, evidence, hits, stats)
+        verdicts = apply_description(verdicts, desc.result())
 
     if video_url.strip():
         say("Checking the demo video on YouTube…")
         vchecks = video_checks(video_url.strip(), rules)
         checks += vchecks
         verdicts = apply_video(rules, verdicts, vchecks)
-    if description.strip():
-        say("Checking your Devpost write-up (Nemotron Super)…")
-        verdicts = judge_description(rules, verdicts, description, stats)
 
     return Report(hackathon_url=hackathon_url, repo_url=repo_url, rules=rules, rules_source=rules_source,
                   facts=facts, checks=checks, verdicts=verdicts, evidence=evidence, usage=stats,

@@ -16,8 +16,12 @@ LIMIT = re.compile(r"(?:under|less than|shorter than|no (?:longer|more) than|max
 MAX_DESCRIPTION_CHARS = 15_000
 
 
+VISIBILITY = re.compile(r"youtube|vimeo|public|visible|upload|link", re.I)
+FORM_FIELD = re.compile(r"\b(identify|select|choose|indicate)\b.*\b(track|category|categories|prize)", re.I)
+
+
 def _is_video(category: str, text: str) -> bool:
-    return category == "video" or "video" in text.lower()
+    return category == "video"
 
 
 def video_limit_minutes(rules: Rules) -> Optional[int]:
@@ -82,17 +86,21 @@ def video_checks(url: str, rules: Rules) -> List[Check]:
 
 
 def apply_video(rules: Rules, verdicts: List[Verdict], checks: List[Check]) -> List[Verdict]:
-    """A failing video check fails the video requirements; passing ones become evidence (content stays unverified)."""
+    """Each video check decides only the requirements it covers: V1 visibility/link, V2 a stated time limit.
+    Everything else about the video (content, music) stays for the entrant to confirm."""
     reqs = {r.id: r for r in rules.requirements}
-    failing = [c for c in checks if c.status == "fail"]
+    by_id = {c.id: c for c in checks}
     out = []
     for v in verdicts:
         r = reqs.get(v.requirement_id)
         if r and _is_video(r.category, r.text) and not r.checkable_from_repo:
-            facts = [f"{c.id}: {c.status.upper()} ({'; '.join(c.evidence)})" for c in checks]
+            relevant = [by_id[i] for i, applies in (("V1", VISIBILITY.search(r.text)), ("V2", LIMIT.search(r.text)))
+                        if applies and i in by_id]
+            facts = [f"{c.id}: {c.status.upper()} ({'; '.join(c.evidence)})" for c in relevant]
+            failing = [c for c in relevant if c.status == "fail"]
             if failing:
                 v = Verdict(requirement_id=v.requirement_id, status="fail", evidence=facts, fix=failing[0].fix)
-            else:
+            elif facts:
                 v = Verdict(requirement_id=v.requirement_id, status="not_checkable",
                             evidence=facts + ["Content not verified: watch it once logged out"])
         out.append(v)
@@ -120,29 +128,31 @@ def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"[\"'“”‘’`*_]", "", s)).strip().lower()
 
 
-def judge_description(rules: Rules, verdicts: List[Verdict], text: str,
-                      stats: Optional[Dict[str, Any]] = None) -> List[Verdict]:
-    reqs = {r.id: r for r in rules.requirements}
-    todo = [reqs[v.requirement_id] for v in verdicts
-            if v.status == "not_checkable" and v.requirement_id in reqs
-            and not _is_video(reqs[v.requirement_id].category, reqs[v.requirement_id].text)]
+def judge_description(rules: Rules, text: str, stats: Optional[Dict[str, Any]] = None) -> Dict[str, Verdict]:
+    """Verdicts for the non-repo, non-video requirements that the write-up itself should satisfy.
+    Independent of the repo verdicts, so the pipeline runs it in parallel with them."""
+    todo = [r for r in rules.requirements if not r.checkable_from_repo and not _is_video(r.category, r.text)
+            and not FORM_FIELD.search(r.text)]
     if not todo or not text.strip():
-        return verdicts
+        return {}
     out = call_json(config.MODEL_SUPER, PROMPT.format(
         requirements="\n".join(f"{r.id}: {r.text}" for r in todo), text=text[:MAX_DESCRIPTION_CHARS],
         ids=", ".join(r.id for r in todo)), VerdictList, config.MAX_TOKENS_SUPER, stats=stats)
-    got = {v.requirement_id: v for v in (out.verdicts if out else [])}
+    ids = {r.id for r in todo}
     body = _norm(text)
-    result = []
-    for v in verdicts:
-        new = got.get(v.requirement_id)
-        if new and v.status == "not_checkable" and new.status in ("pass", "fail"):
-            if new.status == "pass" and not any(len(_norm(e)) >= 12 and _norm(e) in body for e in new.evidence):
-                # Same rule as the repo: a pass must point at text we actually have.
-                new = Verdict(requirement_id=v.requirement_id, status="unclear",
-                              evidence=new.evidence + ["(downgraded: quote not found in your text)"],
-                              fix="State this explicitly in your Devpost description.")
-            new.evidence = [f"Devpost text: {e}" for e in new.evidence]
-            v = new
-        result.append(v)
+    result = {}
+    for new in (out.verdicts if out else []):
+        if new.requirement_id not in ids or new.status not in ("pass", "fail"):
+            continue
+        if new.status == "pass" and not any(len(_norm(e)) >= 12 and _norm(e) in body for e in new.evidence):
+            # Same rule as the repo: a pass must point at text we actually have.
+            new = Verdict(requirement_id=new.requirement_id, status="unclear",
+                          evidence=new.evidence + ["(downgraded: quote not found in your text)"],
+                          fix="State this explicitly in your Devpost description.")
+        new.evidence = [f"Devpost text: {e}" for e in new.evidence]
+        result[new.requirement_id] = new
     return result
+
+
+def apply_description(verdicts: List[Verdict], judged: Dict[str, Verdict]) -> List[Verdict]:
+    return [judged.get(v.requirement_id, v) if v.status == "not_checkable" else v for v in verdicts]

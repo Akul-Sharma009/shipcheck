@@ -81,6 +81,22 @@ Decision: MAX_UNCACHED_RUNS_PER_DAY defaults to 30 (was 100). On a 401 from GitH
 Evidence: 30 Oct. The balance is S$27.15 and Token Factory has no spend cap. The GitHub token expires 29 Nov, before judging (9–23 Dec). Unauthenticated is 60 API requests/hour, about 7 runs/hour; tested with a bogus token.
 Revisit if: real per-run cost (check the console after a few runs) is far below about $0.05, or judging traffic hits the cap.
 
+## Repo checks follow the hackathon's rules
+Status: TESTED (PayPal AI, Codegeist, Nebius rules)
+Decision: D1/D2/D3/D4 count only if a requirement links to them; otherwise they're shown as INFO. D5 (submission window) always counts.
+Evidence: Codegeist doesn't require a license. Before this, a missing license would have topped "Fix these first" for a hackathon that never asked for one.
+Revisit if: a hackathon states a requirement the keyword linking misses.
+
+## Devpost submission check: video by YouTube metadata, write-up by Super with verified quotes
+Status: TESTED (one live run + offline tests)
+Decision:
+- V1 (public, plays logged out) and V2 (under the rules' stated limit) come from the YouTube watch page, with no API key.
+- Each check decides only the requirements it covers (visibility/link vs a stated time limit).
+- The write-up is judged by Super, in parallel with the repo verdicts. A pass needs a quote found verbatim in the text.
+- Form-field requirements (track/category selection) are skipped deterministically.
+Evidence: the first live run failed 7 video requirements from one length failure, and Super failed "identify your track" despite the prompt. Both are fixed and re-tested offline.
+Revisit if: YouTube changes its page markup (V1 then comes back "unclear", not a false pass).
+
 ## Pinned dependencies
 Status: ASSUMED
 Decision: pin `requirements.txt` to the versions verified locally.
