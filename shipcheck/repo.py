@@ -2,6 +2,7 @@
 import base64
 import logging
 import re
+from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
@@ -15,6 +16,8 @@ log = logging.getLogger(__name__)
 API = "https://api.github.com"
 PER_FILE_CHARS = 12_000  # evidence.py truncates each file to this
 RAW = "https://raw.githubusercontent.com"
+GL_API = "https://gitlab.com/api/v4"
+GL_TREE_CAP = 2000
 
 
 class RepoError(Exception):
@@ -29,7 +32,25 @@ def _session() -> requests.Session:
     return s
 
 
+def is_gitlab(url: str) -> bool:
+    return bool(re.search(r"(?:^|//|@)(?:www\.)?gitlab\.com[/:]", url.strip(), re.I))
+
+
+def _gl_parse(url: str) -> Tuple[str, str]:
+    """gitlab.com/group[/subgroup...]/project -> ("group/subgroup", "project")."""
+    m = re.search(r"gitlab\.com[/:](.+)$", url.strip(), re.I)
+    path = m.group(1) if m else ""
+    path = re.split(r"[?#]", path)[0].split("/-/")[0].rstrip("/")
+    path = re.sub(r"\.git$", "", path)
+    parts = [x for x in path.split("/") if x]
+    if len(parts) < 2 or not all(re.fullmatch(r"[\w.-]+", x) for x in parts):
+        raise RepoError(f"Not a GitLab repo URL: {url}")
+    return "/".join(parts[:-1]), parts[-1]
+
+
 def parse_repo_url(url: str) -> Tuple[str, str]:
+    if is_gitlab(url):
+        return _gl_parse(url)
     m = re.search(r"(?:github\.com[/:])?([\w.-]+)/([\w.-]+?)(?:\.git)?(?:/.*)?$", url.strip().rstrip("/"))
     if not m or m.group(1) in ("http:", "https:"):
         raise RepoError(f"Not a GitHub repo URL: {url}")
@@ -99,7 +120,9 @@ def _rank(path: str) -> int:
     return 99
 
 
-def _fetch_raw(s: requests.Session, full_name: str, sha: str, path: str) -> Optional[str]:
+def _fetch_raw(s: Optional[requests.Session], full_name, sha: str, path: str) -> Optional[str]:
+    if isinstance(full_name, int):  # GitLab project id
+        return _gl_raw(full_name, sha, path)
     try:
         r = requests.get(f"{RAW}/{full_name}/{sha}/{path}", timeout=20)  # public files: no token needed
         if r.status_code != 200:
@@ -109,7 +132,7 @@ def _fetch_raw(s: requests.Session, full_name: str, sha: str, path: str) -> Opti
         return None
 
 
-def select_files(s: requests.Session, full_name: str, sha: str, tree: List[Dict], readme_path: Optional[str]
+def select_files(s: Optional[requests.Session], full_name, sha: str, tree: List[Dict], readme_path: Optional[str]
                  ) -> Dict[str, str]:
     """Pick up to MAX_FILES text files within MAX_TOTAL_BYTES, preferring files that name a platform/model,
     then files that call external APIs. Reads a wider pool first (raw fetches don't use the API rate limit)."""
@@ -153,9 +176,114 @@ def readme_has_setup(readme: str) -> bool:
     return bool(SETUP_HEADING.search(readme)) and bool(SETUP_COMMAND.search(readme))
 
 
+# ---------- GitLab (REST v4, unauthenticated, public projects only) ----------
+GL_LICENSE_SPDX = {"mit": "MIT", "apache-2.0": "Apache-2.0", "gpl-2.0": "GPL-2.0", "gpl-3.0": "GPL-3.0",
+                   "lgpl-2.1": "LGPL-2.1", "lgpl-3.0": "LGPL-3.0", "agpl-3.0": "AGPL-3.0",
+                   "bsd-2-clause": "BSD-2-Clause", "bsd-3-clause": "BSD-3-Clause", "mpl-2.0": "MPL-2.0",
+                   "unlicense": "Unlicense", "isc": "ISC", "cc0-1.0": "CC0-1.0", "0bsd": "0BSD",
+                   "epl-2.0": "EPL-2.0", "bsl-1.0": "BSL-1.0", "other": "NOASSERTION"}
+
+
+def _gl_get(path: str, **params) -> requests.Response:
+    r = requests.get(GL_API + path, params=params, timeout=20)
+    if r.status_code == 429:
+        raise RepoError("GitLab rate limit reached; try again later")
+    return r
+
+
+def _gl_project(owner: str, name: str) -> Dict:
+    r = _gl_get(f"/projects/{quote(owner + '/' + name, safe='')}", license="true")
+    if r.status_code in (401, 403, 404):
+        raise RepoError(f"Repo {owner}/{name} not found (or private)")
+    r.raise_for_status()
+    p = r.json()
+    if p.get("visibility", "public") != "public":
+        raise RepoError(f"{p['path_with_namespace']} is private. Judges can't see it either: "
+                        "make it public, then rerun.")
+    return p
+
+
+def _gl_head(repo_url: str) -> Tuple[str, str]:
+    owner, name = parse_repo_url(repo_url)
+    p = _gl_project(owner, name)
+    if not p.get("default_branch"):
+        raise RepoError(f"{p['path_with_namespace']} has no commits yet")
+    c = _gl_get(f"/projects/{p['id']}/repository/commits/{quote(p['default_branch'], safe='')}")
+    c.raise_for_status()
+    return p["path_with_namespace"], c.json()["id"]
+
+
+def _gl_tree(pid: int, sha: str) -> List[Dict]:
+    """Recursive tree normalised to GitHub's shape ({path, type blob|tree, size}); GitLab gives no size."""
+    out, page = [], "1"
+    while page and len(out) < GL_TREE_CAP:
+        r = _gl_get(f"/projects/{pid}/repository/tree", recursive="true", per_page=100, ref=sha, page=page)
+        r.raise_for_status()
+        out += [{"path": e["path"], "type": e["type"], "size": 0} for e in r.json()]
+        page = r.headers.get("X-Next-Page", "")
+    return out[:GL_TREE_CAP]
+
+
+def _gl_raw(pid: int, sha: str, path: str) -> Optional[str]:
+    try:
+        r = requests.get(f"{GL_API}/projects/{pid}/repository/files/{quote(path, safe='')}/raw",
+                         params={"ref": sha}, timeout=20)
+        return r.content.decode("utf-8", errors="replace") if r.status_code == 200 else None
+    except requests.RequestException:
+        return None
+
+
+def _gl_root_file(tree: List[Dict], pattern: str) -> Optional[str]:
+    return next((t["path"] for t in sorted(tree, key=lambda t: t["path"])
+                 if t["type"] == "blob" and "/" not in t["path"] and re.match(pattern, t["path"], re.I)), None)
+
+
+def _gl_ingest(repo_url: str, ref: Optional[str]) -> Tuple[RepoFacts, str, Dict[str, str]]:
+    owner, name = parse_repo_url(repo_url)
+    p = _gl_project(owner, name)
+    full_name, branch, pid = p["path_with_namespace"], p.get("default_branch"), p["id"]
+    if not branch:
+        raise RepoError(f"{full_name} has no commits yet")
+    c = _gl_get(f"/projects/{pid}/repository/commits/{quote(ref or branch, safe='')}")
+    c.raise_for_status()
+    head_c = c.json()
+    sha = head_c["id"]
+    tree = _gl_tree(pid, sha)
+
+    readme_path = _gl_root_file(tree, r"readme(\.\w+)?$")
+    readme = (_gl_raw(pid, sha, readme_path) or "") if readme_path else ""
+    if not readme:
+        readme_path = None
+
+    license_file = _gl_root_file(tree, r"(un)?licen[cs]e|copying")
+    lic = p.get("license") or {}
+    spdx = None
+    if lic:
+        spdx = GL_LICENSE_SPDX.get(str(lic.get("key", "")).lower()) or lic.get("nickname") or lic.get("name")
+    if not spdx and license_file:
+        spdx = "NOASSERTION"  # file present, but GitLab couldn't identify it (mirrors GitHub)
+
+    files = select_files(None, pid, sha, tree, readme_path)
+    facts = RepoFacts(
+        full_name=full_name, url=p["web_url"], is_public=True, default_branch=branch, head_sha=sha,
+        license_spdx=spdx, license_file=license_file, has_readme=bool(readme), readme_path=readme_path,
+        readme_has_setup=readme_has_setup(readme), last_commit_iso=head_c.get("committed_date"),
+        files_in_tree=sum(1 for x in tree if x["type"] == "blob"), files_considered=len(files) + bool(readme),
+        license_file_present=license_file is not None)
+    return facts, readme, files
+
+
+def _gl_commits_in_window(full_name: str, start: datetime, end: datetime) -> int:
+    r = _gl_get(f"/projects/{quote(full_name, safe='')}/repository/commits", since=start.isoformat(),
+                until=end.isoformat(), per_page=100)
+    return len(r.json()) if r.status_code == 200 else 0
+
+
 # ---------- ingestion ----------
 def head(repo_url: str) -> Tuple[str, str]:
     """(full_name, head commit SHA) of the default branch: 2 cheap API calls, used as the cache key."""
+    if is_gitlab(repo_url):
+        return _gl_head(repo_url)
     owner, name = parse_repo_url(repo_url)
     s = _session()
     r = _get(s, f"/repos/{owner}/{name}")
@@ -173,6 +301,8 @@ def head(repo_url: str) -> Tuple[str, str]:
 def ingest(repo_url: str, ref: Optional[str] = None) -> Tuple[RepoFacts, str, Dict[str, str]]:
     """Returns (facts, README text, {path: content} for selected files) at `ref` (default: the default branch's
     head). Private repos are not read."""
+    if is_gitlab(repo_url):
+        return _gl_ingest(repo_url, ref)
     owner, name = parse_repo_url(repo_url)
     s = _session()
     r = _get(s, f"/repos/{owner}/{name}")
@@ -230,8 +360,10 @@ def _parse_dt(value: Optional[str]) -> Optional[datetime]:
     return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
 
 
-def commits_in_window(full_name: str, start: datetime, end: datetime) -> int:
+def commits_in_window(full_name: str, start: datetime, end: datetime, url: str = "") -> int:
     """Number of commits on the default branch in [start, end], capped at 100."""
+    if is_gitlab(url):
+        return _gl_commits_in_window(full_name, start, end)
     r = _get(_session(), f"/repos/{full_name}/commits", since=start.isoformat(), until=end.isoformat(),
              per_page=100)
     return len(r.json()) if r.status_code == 200 else 0
@@ -239,25 +371,26 @@ def commits_in_window(full_name: str, start: datetime, end: datetime) -> int:
 
 # ---------- deterministic checks ----------
 def deterministic_checks(facts: RepoFacts, rules: Optional[Rules] = None) -> List[Check]:
+    host = "GitLab" if is_gitlab(facts.url) else "GitHub"
     checks = [Check(id="D1", name="Repository is public", status="pass" if facts.is_public else "fail",
-                    evidence=[f"GitHub reports {facts.full_name} as {'public' if facts.is_public else 'private'}"],
+                    evidence=[f"{host} reports {facts.full_name} as {'public' if facts.is_public else 'private'}"],
                     fix=None if facts.is_public else "Settings → General → Danger Zone → Change visibility → Public.")]
 
     if facts.license_spdx and facts.license_spdx != "NOASSERTION":
-        checks.append(Check(id="D2", name="Open-source license detected by GitHub", status="pass",
-                            evidence=[f"GitHub license detection: {facts.license_spdx} ({facts.license_file})"]))
+        checks.append(Check(id="D2", name=f"Open-source license detected by {host}", status="pass",
+                            evidence=[f"{host} license detection: {facts.license_spdx} ({facts.license_file})"]))
     elif facts.license_spdx == "NOASSERTION":
-        checks.append(Check(id="D2", name="Open-source license detected by GitHub", status="fail",
-                            evidence=[f"{facts.license_file} exists, but GitHub can't identify the license"],
+        checks.append(Check(id="D2", name=f"Open-source license detected by {host}", status="fail",
+                            evidence=[f"{facts.license_file} exists, but {host} can't identify the license"],
                             fix=f"Replace {facts.license_file} with an unmodified template (Add file → Create new "
                                 "file → name it LICENSE → Choose a license template) so it shows in the About panel."))
     else:
-        checks.append(Check(id="D2", name="Open-source license detected by GitHub", status="fail",
-                            evidence=["GitHub detects no license in this repo"],
+        checks.append(Check(id="D2", name=f"Open-source license detected by {host}", status="fail",
+                            evidence=[f"{host} detects no license in this repo"],
                             fix="Add file → Create new file → name it LICENSE → Choose a license template → MIT."))
 
     checks.append(Check(id="D3", name="README exists", status="pass" if facts.has_readme else "fail",
-                        evidence=[facts.readme_path or "no README found by GitHub"],
+                        evidence=[facts.readme_path or f"no README found by {host}"],
                         fix=None if facts.has_readme else "Add a README.md at the repo root."))
 
     if facts.has_readme:
@@ -272,7 +405,7 @@ def deterministic_checks(facts: RepoFacts, rules: Optional[Rules] = None) -> Lis
     start = _parse_dt(rules.submission_start) if rules else None
     end = _parse_dt(rules.deadline) if rules else None
     if start and end:
-        n = commits_in_window(facts.full_name, start, end)
+        n = commits_in_window(facts.full_name, start, end, facts.url)
         checks.append(Check(id="D5", name="Commits during the submission period", status="pass" if n else "fail",
                             evidence=[f"{n}{'+' if n == 100 else ''} commits between {start:%d %b %Y} and "
                                       f"{end:%d %b %Y}; last commit {facts.last_commit_iso}"],

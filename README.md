@@ -2,7 +2,7 @@
 
 **Pre-judge your hackathon submission before the judges do.**
 
-Paste a hackathon URL and your GitHub repo. In about 30 seconds ShipCheck gives you:
+Paste a hackathon URL and your GitHub or GitLab repo. In about 30 seconds ShipCheck gives you:
 - a pass/fail verdict on every submission requirement in *that* hackathon's rules, each citing the file and line it's based on
 - a one-line fix under every failure
 - a ready-to-paste README section for README failures
@@ -177,7 +177,7 @@ The keyword check's false pass was a real entry with a truncated MIT license. Gi
 
 ## Limitations
 
-- **Public GitHub repos and Devpost hackathons only.** Other platforms work if you paste the rules text.
+- **Public GitHub and GitLab.com repos, and Devpost hackathons, only.** Self-hosted GitLab is not supported. Other hackathon platforms work if you paste the rules text.
 - **AI verdicts can be wrong.** They are constrained to cite evidence, but treat "unclear" as "go look". The evaluation above is small (28 labels).
 - **A README claim can still pass a README requirement.** On the demo repo, "README must highlight how you used Nemotron" passes because the README says so, even though the code calls OpenAI. The code-level requirements (runs on Token Factory, uses an NVIDIA model) come back "unclear" rather than fail, since a pass needs code evidence.
 - **Video checks cover the essentials only:** visibility and length. ShipCheck doesn't watch the content.
