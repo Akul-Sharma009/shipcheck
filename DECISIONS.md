@@ -116,6 +116,12 @@ Decision: spend the remaining time on deploy, the 3-repo eval, README, video and
 Evidence: red-team. Ultra criterion scores invite the "invented score" trap. Tavily Extract is already a runtime call, so the bonus doesn't need originality search. Design and evidence matter more than another feature.
 Revisit if: everything else is done before 11 PM.
 
+## A README claim can't pass a usage requirement
+Status: TESTED (30 Oct 9:16 PM)
+Decision: after the model's verdict, a deterministic check (`judge.check_usage`) looks for usage in code and config only: NVIDIA model IDs (`nvidia/...`, `nemotron-...`) and Nebius endpoints (`tokenfactory`, `nebius.com`, `NEBIUS_API_KEY`). If none is found and the code names another provider (e.g. `gpt-4o-mini`), "uses NVIDIA model", "runs on Token Factory" and "README must highlight..." become FAIL, citing that line. With no signal either way, a pass becomes unclear.
+Evidence: on the demo repo, the model returned R1/R2 as unclear and the README-highlight requirement as a false PASS, although app.py calls gpt-4o-mini. Eval rerun with the change: ShipCheck unchanged at 28/28, 0% false passes; every prediction identical to before.
+Revisit if: an eval repo that sets its model only through an env var not in any selected file gets downgraded.
+
 ## Open questions
 - Demo lead (red-team): a LICENSE with modified MIT text. GitHub reports NOASSERTION, so the About panel shows no license, while a keyword check or a chatbot would say PASS. Needs a small public demo repo; pre-record the rerun, because GitHub's license detection can lag after a push.
 - What does ShipCheck do concretely that SubmitGuard, Hackverify and the others don't? The demo must show it.

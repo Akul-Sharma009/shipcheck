@@ -79,6 +79,70 @@ def _cites_known(v: Verdict, known: Set[str]) -> bool:
     return any(k in e for e in v.evidence for k in known)
 
 
+# Usage the code itself shows: model IDs and endpoints, not prose. A comment saying "Nemotron" is not usage.
+NVIDIA_MODEL = re.compile(r"nvidia/[\w.-]+|nemotron[-_][\w.-]+", re.I)
+NEBIUS_PLATFORM = re.compile(r"tokenfactory|nebius\.com|studio\.nebius|NEBIUS_API_KEY", re.I)
+OTHER_PROVIDER = re.compile(r"api\.openai\.com|\bgpt-[34o][\w.-]*|\bo[134]-mini\b|claude-[\w.-]+|gemini-[\w.-]+|"
+                            r"api\.anthropic\.com|generativelanguage\.googleapis", re.I)
+
+
+def _usage_kind(req_text: str) -> Optional[str]:
+    """'model' / 'platform' for a requirement to use NVIDIA models / Nebius, 'readme' for one to describe that use."""
+    t = req_text.lower()
+    names_model = "nvidia" in t or "nemotron" in t
+    names_platform = "token factory" in t or "ai cloud" in t
+    if "feedback" in t:
+        return None
+    if "readme" in t:
+        return "readme" if names_model or names_platform else None
+    if names_platform:
+        return "platform"
+    if names_model and "model" in t:
+        return "model"
+    return None
+
+
+def code_usage(hits: List[str], evidence: List[FileEvidence], readme_path: Optional[str]) -> Dict[str, List[str]]:
+    """path:line (or path) citations, from code and config only (never the README), for each kind of usage."""
+    out: Dict[str, List[str]] = {"model": [], "platform": [], "other": []}
+    for h in hits:  # 'path:line: text'
+        path, line, text = (h.split(":", 2) + ["", ""])[:3]
+        if path == readme_path or path.lower().endswith((".md", ".rst", ".txt")):
+            continue
+        for kind, pat in (("model", NVIDIA_MODEL), ("platform", NEBIUS_PLATFORM), ("other", OTHER_PROVIDER)):
+            m = pat.search(text)
+            if m:
+                out[kind].append(f"{path}:{line}: {m.group(0)}")
+    for e in evidence:
+        for item in e.models_used + e.apis_called:
+            for kind, pat in (("model", NVIDIA_MODEL), ("platform", NEBIUS_PLATFORM), ("other", OTHER_PROVIDER)):
+                if pat.search(item):
+                    out[kind].append(f"{e.path}: {item}")
+    return out
+
+
+def check_usage(kind: str, v: Verdict, usage: Dict[str, List[str]]) -> Verdict:
+    """A README claim must not pass a usage requirement. If the code shows another provider and no NVIDIA model /
+    Nebius endpoint, that's a fail with the line that proves it; with no signal either way, a pass becomes unclear."""
+    needed = ["model", "platform"] if kind == "readme" else [kind]
+    missing = [k for k in needed if not usage[k]]
+    if not missing:
+        return v
+    what = {"model": "an NVIDIA model ID", "platform": "a Nebius Token Factory / AI Cloud endpoint"}
+    absent = " or ".join(what[k] for k in missing)
+    if usage["other"]:
+        claim = "The README describes usage the code doesn't have. " if kind == "readme" else ""
+        return Verdict(requirement_id=v.requirement_id, status="fail",
+                       evidence=usage["other"][:2] + [f"No code or config references {absent}"],
+                       fix=f"{claim}Switch the model call in {usage['other'][0].split(':')[0]} to Nemotron on Nebius "
+                           "Token Factory (OpenAI-compatible: set base_url and the model ID).")
+    if v.status == "pass":
+        return Verdict(requirement_id=v.requirement_id, status="unclear",
+                       evidence=v.evidence + [f"(downgraded: no code or config references {absent})"],
+                       fix=v.fix or f"Make {absent} visible in code or config so a judge can find it.")
+    return v
+
+
 def judge(rules: Rules, facts: RepoFacts, checks: List[Check], readme: str, evidence: List[FileEvidence],
           hits: List[str], stats: Optional[Dict[str, Any]] = None) -> List[Verdict]:
     by_id = {c.id: c for c in checks}
@@ -97,6 +161,7 @@ def judge(rules: Rules, facts: RepoFacts, checks: List[Check], readme: str, evid
         out = call_json(config.MODEL_SUPER, prompt, VerdictList, config.MAX_TOKENS_SUPER, stats=stats)
         llm = {v.requirement_id: v for v in (out.verdicts if out else [])}
 
+    usage = code_usage(hits, evidence, facts.readme_path)
     known = ({e.path for e in evidence} | set(by_id) | {facts.url, facts.full_name}
              | {p for p in (facts.readme_path, facts.license_file) if p})
     verdicts = []
@@ -121,5 +186,8 @@ def judge(rules: Rules, facts: RepoFacts, checks: List[Check], readme: str, evid
             v = Verdict(requirement_id=r.id, status="unclear",
                         evidence=v.evidence + ["(downgraded: cited evidence doesn't match any file ShipCheck read)"],
                         fix=v.fix or "Make this visible in the README or code so a judge can find it.")
+        kind = _usage_kind(r.text)
+        if kind and not (linked and linked.status == "fail"):
+            v = check_usage(kind, v, usage)
         verdicts.append(v)
     return verdicts
