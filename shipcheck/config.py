@@ -64,7 +64,7 @@ MAX_TOTAL_BYTES = _int("MAX_TOTAL_BYTES", 200_000)
 
 # ---------- cost guardrails ----------
 MAX_RUNS_PER_SESSION = _int("MAX_RUNS_PER_SESSION", 5)
-MAX_UNCACHED_RUNS_PER_DAY = _int("MAX_UNCACHED_RUNS_PER_DAY", 100)
+MAX_UNCACHED_RUNS_PER_DAY = _int("MAX_UNCACHED_RUNS_PER_DAY", 30)
 # Kill switch: false = never call paid APIs, serve cached examples only.
 LIVE = _bool("SHIPCHECK_LIVE", True)
 

@@ -75,6 +75,12 @@ Decision: a disk JSON result cache, a file-backed daily counter, a per-session c
 Evidence: Streamlit Cloud reboots reset in-memory caches and local disk, so the counters can't be hard limits.
 Revisit if: Token Factory offers a spend limit (then rely on it), or traffic during judging is higher than expected.
 
+## Daily cap 30 uncached runs; survive an expired GitHub token
+Status: ASSUMED
+Decision: MAX_UNCACHED_RUNS_PER_DAY defaults to 30 (was 100). On a 401 from GitHub, drop the token and continue unauthenticated; raw file fetches never send the token.
+Evidence: 30 Oct. The balance is S$27.15 and Token Factory has no spend cap. The GitHub token expires 29 Nov, before judging (9–23 Dec). Unauthenticated is 60 API requests/hour, about 7 runs/hour; tested with a bogus token.
+Revisit if: real per-run cost (check the console after a few runs) is far below about $0.05, or judging traffic hits the cap.
+
 ## Pinned dependencies
 Status: ASSUMED
 Decision: pin `requirements.txt` to the versions verified locally.
@@ -104,4 +110,4 @@ Revisit if: everything else is done before 11 PM.
     - any accuracy measured on a labeled set
 - Which real gallery repo is the unbiased ground-truth case? For the eval, freeze one Rules extraction and score every method against that same requirement list.
 - The brief's `Rules` schema has no `submission_start`, so "commits within submission period" needs it added. If it's absent, the check is unclear.
-- Does the Token Factory console have a spend limit, or a way to turn off auto top-up? (The user is checking.)
+- Token Factory has no spend cap (user checked 30 Oct). The kill switch and daily cap are the only controls.

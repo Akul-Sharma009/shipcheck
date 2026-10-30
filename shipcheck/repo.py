@@ -1,5 +1,6 @@
 """GitHub ingestion (REST API, read-only) and deterministic checks. Never executes repo code."""
 import base64
+import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
@@ -10,6 +11,7 @@ import requests
 from shipcheck import config
 from shipcheck.schemas import Check, RepoFacts, Rules
 
+log = logging.getLogger(__name__)
 API = "https://api.github.com"
 PER_FILE_CHARS = 12_000  # evidence.py truncates each file to this
 RAW = "https://raw.githubusercontent.com"
@@ -36,6 +38,11 @@ def parse_repo_url(url: str) -> Tuple[str, str]:
 
 def _get(s: requests.Session, path: str, **params) -> requests.Response:
     r = s.get(API + path, params=params, timeout=20)
+    if r.status_code == 401 and "Authorization" in s.headers:
+        # Expired or revoked token: public repos still work unauthenticated (60 requests/hour instead of 5,000).
+        log.warning("GITHUB_TOKEN rejected (401); continuing without it")
+        del s.headers["Authorization"]
+        r = s.get(API + path, params=params, timeout=20)
     if r.status_code == 403 and r.headers.get("X-RateLimit-Remaining") == "0":
         raise RepoError("GitHub rate limit reached; try again later")
     return r
@@ -94,7 +101,7 @@ def _rank(path: str) -> int:
 
 def _fetch_raw(s: requests.Session, full_name: str, sha: str, path: str) -> Optional[str]:
     try:
-        r = s.get(f"{RAW}/{full_name}/{sha}/{path}", timeout=20)
+        r = requests.get(f"{RAW}/{full_name}/{sha}/{path}", timeout=20)  # public files: no token needed
         if r.status_code != 200:
             return None
         return r.content.decode("utf-8", errors="replace")
