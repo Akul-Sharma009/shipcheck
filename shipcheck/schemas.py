@@ -97,3 +97,6 @@ class Report(BaseModel):
     usage: Dict[str, Any]
     seconds: float
     created_at: str
+    readme: str = ""  # first 8K chars, for drafting README fixes
+    video_url: str = ""
+    description_checked: bool = False

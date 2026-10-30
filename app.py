@@ -34,7 +34,7 @@ def show_example(reason: str) -> None:
         st.session_state.notice = reason
 
 
-def check(hackathon_url: str, repo_url: str, pasted: str) -> None:
+def check(hackathon_url: str, repo_url: str, pasted: str, video_url: str, description: str) -> None:
     st.session_state.notice = ""
     if not config.LIVE or config.missing_keys():
         return show_example("Live checks are paused right now.")
@@ -48,7 +48,7 @@ def check(hackathon_url: str, repo_url: str, pasted: str) -> None:
         return
 
     rkey = guard.rules_key(hackathon_url, pasted)
-    key = guard.report_key(sha, rkey)
+    key = guard.report_key(sha, rkey, video_url.strip() + "\n" + description.strip())
     cached = guard.get_report(key)
     if cached:
         st.session_state.report = cached
@@ -66,7 +66,8 @@ def check(hackathon_url: str, repo_url: str, pasted: str) -> None:
         with st.status("Checking your submission…", expanded=True) as status:
             report = run(hackathon_url, repo_url, pasted,
                          rules=rules_hit[0] if rules_hit else None,
-                         rules_source=rules_hit[1] if rules_hit else "", progress=status.write)
+                         rules_source=rules_hit[1] if rules_hit else "", description=description,
+                         video_url=video_url, progress=status.write)
             status.update(label=f"Checked in {report.seconds:.0f}s", state="complete", expanded=False)
     except (PipelineError, RepoError) as e:
         st.session_state.notice = f"error:{e}"
@@ -123,7 +124,7 @@ def render(report: Report) -> None:
             if v.fix:
                 st.caption(f"Fix: {md(v.fix)}")
     with tabs[1]:
-        st.caption("Facts from the GitHub API. No AI involved; these override the model.")
+        st.caption("Facts from the GitHub API (and YouTube, if you gave a video). No AI involved; these override the model.")
         for ch in report.checks:
             if not ch.required:
                 st.markdown(f":gray-background[**INFO**] &nbsp; **{ch.id}** {ch.name} "
@@ -132,10 +133,15 @@ def render(report: Report) -> None:
             st.markdown(f"{BADGE[ch.status]} &nbsp; **{ch.id}** {ch.name}")
             st.caption(md("; ".join(ch.evidence)) + (f"  \nFix: {md(ch.fix)}" if ch.fix else ""))
     with tabs[2]:
-        st.caption("These can't be verified from a repo. Tick them off before you hit submit.")
+        st.caption("These can't be verified from a repo" + ("" if report.description_checked else
+                   " (paste your Devpost write-up above and ShipCheck checks the text ones too)")
+                   + ". Tick them off before you hit submit.")
         for v in report.verdicts:
             if v.status == "not_checkable":
                 st.checkbox(md(reqs[v.requirement_id].text), key=f"manual_{f.head_sha}_{v.requirement_id}")
+                extra = [e for e in v.evidence if not e.startswith("Not verifiable")]
+                if extra:
+                    st.caption(md("; ".join(extra)))
     with tabs[3]:
         st.markdown(f"**Rules:** {md(report.rules_source)}. {len(rules.requirements)} requirements, "
                     f"{len(rules.criteria)} judging criteria"
@@ -172,6 +178,11 @@ st.markdown("**Pre-judge your hackathon submission before the judges do.** Paste
 with st.form("check"):
     hackathon_url = st.text_input("Hackathon page (Devpost)", DEFAULT_HACKATHON)
     repo_url = st.text_input("Your GitHub repo", placeholder="https://github.com/you/your-project")
+    with st.expander("Also check your Devpost submission (video link, write-up)"):
+        video_url = st.text_input("YouTube demo video", placeholder="https://youtu.be/…")
+        description = st.text_area("Devpost write-up", height=150,
+                                   placeholder="Paste your project description, plus any other text fields "
+                                               "(e.g. feedback). Nothing is stored or posted.")
     with st.expander("Rules page won't load? Paste the rules text instead"):
         pasted = st.text_area("Rules text", height=150, label_visibility="collapsed")
     submitted = st.form_submit_button("Check my submission", type="primary", use_container_width=True)
@@ -180,7 +191,7 @@ if submitted:
     if not repo_url.strip():
         st.session_state.notice = "error:Enter your GitHub repo URL."
     else:
-        check(hackathon_url.strip() or DEFAULT_HACKATHON, repo_url.strip(), pasted)
+        check(hackathon_url.strip() or DEFAULT_HACKATHON, repo_url.strip(), pasted, video_url, description)
 
 if "report" not in st.session_state and not submitted:
     ex = guard.examples()

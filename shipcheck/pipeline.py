@@ -8,6 +8,7 @@ from shipcheck.judge import judge, mark_required
 from shipcheck.repo import deterministic_checks, ingest
 from shipcheck.rules import get_rules
 from shipcheck.schemas import Report, Rules
+from shipcheck.submission import apply_video, judge_description, video_checks
 
 
 class PipelineError(Exception):
@@ -15,7 +16,8 @@ class PipelineError(Exception):
 
 
 def run(hackathon_url: str, repo_url: str, pasted_rules: str = "", rules: Optional[Rules] = None,
-        rules_source: str = "", progress: Optional[Callable[[str], None]] = None) -> Report:
+        rules_source: str = "", description: str = "", video_url: str = "",
+        progress: Optional[Callable[[str], None]] = None) -> Report:
     """Pass `rules` to reuse a cached extraction. Raises PipelineError, RepoError or LLMError."""
     say = progress or (lambda msg: None)
     stats: Dict[str, Any] = {}
@@ -39,6 +41,16 @@ def run(hackathon_url: str, repo_url: str, pasted_rules: str = "", rules: Option
     say("Judging each requirement (Nemotron Super)…")
     verdicts = judge(rules, facts, checks, readme, evidence, hits, stats)
 
+    if video_url.strip():
+        say("Checking the demo video on YouTube…")
+        vchecks = video_checks(video_url.strip(), rules)
+        checks += vchecks
+        verdicts = apply_video(rules, verdicts, vchecks)
+    if description.strip():
+        say("Checking your Devpost write-up (Nemotron Super)…")
+        verdicts = judge_description(rules, verdicts, description, stats)
+
     return Report(hackathon_url=hackathon_url, repo_url=repo_url, rules=rules, rules_source=rules_source,
                   facts=facts, checks=checks, verdicts=verdicts, evidence=evidence, usage=stats,
+                  readme=readme[:8000], video_url=video_url.strip(), description_checked=bool(description.strip()),
                   seconds=round(time.time() - t0, 1), created_at=datetime.now(timezone.utc).isoformat())

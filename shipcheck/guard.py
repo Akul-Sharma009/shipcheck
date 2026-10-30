@@ -60,8 +60,9 @@ def put_rules(key: str, rules: Rules, source: str) -> None:
 
 
 # ---------- report cache: (repo commit SHA, hackathon URL, pasted rules) ----------
-def report_key(head_sha: str, rkey: str) -> str:
-    return _key("report", head_sha, rkey)
+def report_key(head_sha: str, rkey: str, submission: str = "") -> str:
+    """submission = video URL + Devpost text; a different write-up is a different check."""
+    return _key("report", head_sha, rkey, hashlib.sha256(submission.strip().encode()).hexdigest())
 
 
 def get_report(key: str) -> Optional[Report]:
