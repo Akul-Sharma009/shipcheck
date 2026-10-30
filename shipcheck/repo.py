@@ -11,6 +11,7 @@ from shipcheck import config
 from shipcheck.schemas import Check, RepoFacts, Rules
 
 API = "https://api.github.com"
+PER_FILE_CHARS = 12_000  # evidence.py truncates each file to this
 RAW = "https://raw.githubusercontent.com"
 
 
@@ -54,6 +55,8 @@ CONFIG_NAMES = {"requirements.txt", "pyproject.toml", "package.json", "Dockerfil
                 ".env.example", "env.example", "setup.py", "Cargo.toml", "go.mod", "app.yaml", "vercel.json"}
 ENTRY_STEMS = {"app", "main", "index", "server", "streamlit_app", "agent", "api", "run", "cli"}
 HINT_WORDS = ("llm", "model", "agent", "client", "api", "chat", "infer", "nebius", "nvidia", "tavily", "config")
+# Platform / model names: a file mentioning these is the strongest evidence for usage requirements.
+STRONG_PATTERN = re.compile(r"nebius|tokenfactory|nemotron|nvidia/|tavily", re.I)
 # Runtime API usage worth surfacing to the evidence step.
 USAGE_PATTERN = re.compile(r"openai|tavily|nebius|tokenfactory|nemotron|nvidia|anthropic|httpx|requests\.|"
                            r"fetch\(|axios|base_url|api_key|chat\.completions", re.I)
@@ -101,28 +104,33 @@ def _fetch_raw(s: requests.Session, full_name: str, sha: str, path: str) -> Opti
 
 def select_files(s: requests.Session, full_name: str, sha: str, tree: List[Dict], readme_path: Optional[str]
                  ) -> Dict[str, str]:
-    """Pick up to MAX_FILES text files within MAX_TOTAL_BYTES, preferring files that call external APIs."""
+    """Pick up to MAX_FILES text files within MAX_TOTAL_BYTES, preferring files that name a platform/model,
+    then files that call external APIs. Reads a wider pool first (raw fetches don't use the API rate limit)."""
     blobs = [(t["path"], t.get("size", 0)) for t in tree if t.get("type") == "blob"]
     candidates = sorted(((p, sz) for p, sz in blobs if not _skippable(p, sz) and p != readme_path
                          and _rank(p) < 99), key=lambda x: (_rank(x[0]), x[0]))
     pool, pool_bytes = [], 0
-    for p, sz in candidates:  # read a pool ~2x the budget, then keep the most relevant
-        if len(pool) >= 2 * config.MAX_FILES or pool_bytes + sz > 2 * config.MAX_TOTAL_BYTES:
+    for p, sz in candidates:
+        if len(pool) >= 4 * config.MAX_FILES or pool_bytes + sz > 3 * config.MAX_TOTAL_BYTES:
             break
         pool.append(p)
         pool_bytes += sz
-    with ThreadPoolExecutor(max_workers=8) as ex:
+    with ThreadPoolExecutor(max_workers=16) as ex:
         contents = dict(zip(pool, ex.map(lambda p: _fetch_raw(s, full_name, sha, p), pool)))
-    ranked = sorted((p for p in pool if contents.get(p)),
-                    key=lambda p: (0 if USAGE_PATTERN.search(contents[p]) else 1, _rank(p), p))
+
+    def priority(p: str):
+        c = contents[p]
+        return (0 if STRONG_PATTERN.search(c) else 1 if USAGE_PATTERN.search(c) else 2, _rank(p), p)
+
     chosen, total = {}, 0
-    for p in ranked:
+    for p in sorted((p for p in pool if contents.get(p)), key=priority):
         if len(chosen) >= config.MAX_FILES - 1:  # README takes one slot
             break
-        if total + len(contents[p]) > config.MAX_TOTAL_BYTES:
+        cost = min(len(contents[p]), PER_FILE_CHARS)  # the evidence step only reads this much
+        if total + cost > config.MAX_TOTAL_BYTES:
             continue
         chosen[p] = contents[p]
-        total += len(contents[p])
+        total += cost
     return chosen
 
 

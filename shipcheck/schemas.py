@@ -1,5 +1,5 @@
 """Pydantic models for every LLM output and pipeline result. Python 3.9-compatible typing."""
-from typing import List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -81,3 +81,18 @@ class CriterionScore(BaseModel):
 
 class ScoreList(BaseModel):
     scores: List[CriterionScore]
+
+
+class Report(BaseModel):
+    """Everything one run produces; what gets cached and rendered."""
+    hackathon_url: str
+    repo_url: str
+    rules: Rules
+    rules_source: str
+    facts: RepoFacts
+    checks: List[Check]
+    verdicts: List[Verdict]
+    evidence: List[FileEvidence]
+    usage: Dict[str, Any]
+    seconds: float
+    created_at: str

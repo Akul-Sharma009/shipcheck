@@ -12,7 +12,10 @@ Format: date/time SGT · tool · what happened · impact · suggestion.
 - 30 Oct 7:20 PM · Positive: Super answered in 0.8 s, and all three tiers returned valid JSON from prompt instructions alone.
 
 ## NVIDIA Nemotron models
-- (see Token Factory entries; add model-quality notes here)
+- 30 Oct 8:30 PM · **Nano (thinking off) copies the example values from the prompt into its answers.** Given "e.g. Nebius Token Factory, Tavily, GitHub API, OpenAI" as examples for apis_called, it listed all four for requirements.txt, docker-compose.yml and JS files that call none of them. · A silent false-evidence risk. · Workaround: removed the examples and dropped any claim whose name doesn't appear in the file. Model cards could warn about example-copying at small sizes.
+- 30 Oct 8:30 PM · Nano occasionally returns markdown prose instead of the requested JSON object (1 in ~30 calls); one retry with the error fixed it every time.
+- 30 Oct 8:40 PM · Positive: **Super's verdicts cite exact path:line evidence when given grep lines with line numbers.** In a spot check, both citations (Token Factory base URL, Nemotron model ID) were the right lines. Super without thinking gave 2.5K-token rules in about 10 s; Super with thinking gave verdicts in about 25 s.
+- 30 Oct 8:40 PM · Cost per full run (17 requirements, 26 files): Nano 26 calls, ~65K in / 3.6K out; Super 2 calls, ~20K in / ~3.8K out; about 37 s wall time.
 
 ## Tavily
 - 30 Oct 7:50 PM · Extracting the Devpost overview + rules in one call worked first time (10K + 40K chars). About 6K chars of each page was Devpost's site navigation, repeated twice per page, above the actual content. Dropping everything above the first H1 plus deduplicating lines removed it. · Suggest an `extract_depth`/"main content only" mode that drops site chrome.

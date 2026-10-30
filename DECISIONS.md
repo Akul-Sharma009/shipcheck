@@ -57,6 +57,18 @@ Decision: if GitHub reports the repo as private, stop before reading any content
 Evidence: the server's GITHUB_TOKEN may be able to read the owner's private repos. Without this check, any visitor could make the public app summarize them.
 Revisit if: never. Also use a fine-grained token limited to public repositories.
 
+## Evidence is grounded deterministically; unverifiable passes are downgraded
+Status: TESTED (spot check on 2 real entries, not yet the labeled eval)
+Decision: (1) A model ID or service in Nano's per-file evidence is kept only if its brand word appears in that file. (2) A PASS from Super must cite a file ShipCheck actually read, or a check id; otherwise it becomes UNCLEAR. (3) Deterministic checks override: a linked failing check (D1/D2/D4) fails the requirement; D2 decides license both ways; D1 decides "provide a public repo URL". (4) Platform/model usage needs code evidence, not a README claim.
+Evidence: 30 Oct, Fu93/tradeflow-ai. Nano copied the prompt's example services into most files, e.g. "Nebius Token Factory" listed for requirements.txt. After grounding, R1/R2 cite src/config/heuristics.py:519 (Token Factory base URL) and :526 (Nemotron model ID), both checked by hand.
+Revisit if: the labeled eval shows grounding drops true evidence (more false "unclear").
+
+## File selection: wide pool, then rank by content
+Status: TESTED (one repo)
+Decision: read up to 4×MAX_FILES candidates by path rank. Keep files that name a platform/model first, then API-calling files, counting each file's truncated size (12K chars) against the 200 KB budget.
+Evidence: tradeflow-ai (600 files). The old selection missed src/engine/llm_config.py and picked 18 files; the new one picks 26, including both LLM config files, in 3 s.
+Revisit if: a repo's LLM code is still missed, or GitHub raw fetches get rate-limited.
+
 ## Cost caps are best effort; the kill switch is the reliable control
 Status: ASSUMED
 Decision: a disk JSON result cache, a file-backed daily counter, a per-session cap, and `SHIPCHECK_LIVE=false` to serve only `examples/`.

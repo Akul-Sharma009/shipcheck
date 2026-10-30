@@ -1,40 +1,40 @@
 """Command-line run of the pipeline (for testing and evaluation).
 
-    python -m shipcheck.cli <hackathon_url> <repo_url>
+    python -m shipcheck.cli <hackathon_url> <repo_url> [--json out.json]
 """
 import sys
-import time
-from typing import Any, Dict
 
-from shipcheck.repo import deterministic_checks, ingest
-from shipcheck.rules import get_rules
+from shipcheck.pipeline import run
+
+ICON = {"pass": "PASS", "fail": "FAIL", "unclear": "??  ", "not_checkable": "--  "}
 
 
-def main(hackathon_url: str, repo_url: str) -> None:
-    stats: Dict[str, Any] = {}
-    t = time.time()
-    rules, source = get_rules(hackathon_url, stats=stats)
-    print(f"RULES  ({time.time() - t:.0f}s, {source})")
-    if not rules:
-        sys.exit("FAILED to extract rules")
-    print(f"  {rules.hackathon_name} | submission period {rules.submission_start} -> {rules.deadline}")
-    for r in rules.requirements:
-        print(f"  {r.id:4} [{r.category:11}] {'repo' if r.checkable_from_repo else '    '}  {r.text[:100]}")
-    print("  criteria:", "; ".join(c.name for c in rules.criteria))
-
-    t = time.time()
-    facts, readme, files = ingest(repo_url)
-    print(f"\nREPO  ({time.time() - t:.0f}s) {facts.full_name} @ {facts.head_sha[:7]}")
-    print(f"  license={facts.license_spdx} readme={facts.readme_path} files: {facts.files_considered} of "
-          f"{facts.files_in_tree} selected")
+def main(argv) -> None:
+    if len(argv) not in (2, 4) or (len(argv) == 4 and argv[2] != "--json"):
+        sys.exit(__doc__)
+    report = run(argv[0], argv[1], progress=lambda m: print("·", m))
+    reqs = {r.id: r for r in report.rules.requirements}
+    print(f"\n{report.rules.hackathon_name}  ×  {report.facts.full_name} @ {report.facts.head_sha[:7]}")
     print("\nDETERMINISTIC CHECKS")
-    for c in deterministic_checks(facts, rules):
-        print(f"  {c.id} {c.status.upper():8} {c.name}  | {'; '.join(c.evidence)}"
-              + (f"\n      fix: {c.fix}" if c.fix else ""))
-    print("\nLLM usage:", stats)
+    for c in report.checks:
+        print(f"  {ICON[c.status]} {c.id} {c.name}")
+    print("\nREQUIREMENTS")
+    for v in report.verdicts:
+        print(f"  {ICON[v.status]} {v.requirement_id:4} {reqs[v.requirement_id].text[:90]}")
+        if v.status in ("pass", "fail", "unclear"):
+            print(f"         evidence: {' | '.join(v.evidence)[:220]}")
+        if v.fix:
+            print(f"         fix: {v.fix}")
+    counts = {s: sum(v.status == s for v in report.verdicts) for s in ICON}
+    print(f"\n{counts['pass']} pass · {counts['fail']} fail · {counts['unclear']} unclear · "
+          f"{counts['not_checkable']} to confirm yourself   ({report.seconds}s, {len(report.evidence)} files summarized)")
+    for model, s in report.usage.items():
+        print(f"  {model}: {s['calls']} calls, {s['prompt_tokens']} in / {s['completion_tokens']} out, "
+              f"{s['seconds']:.0f}s summed")
+    if len(argv) == 4:
+        open(argv[3], "w").write(report.model_dump_json(indent=2))
+        print("saved", argv[3])
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        sys.exit(__doc__)
-    main(sys.argv[1], sys.argv[2])
+    main(sys.argv[1:])
