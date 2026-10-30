@@ -1,0 +1,6 @@
+streamlit
+openai
+tavily-python
+requests
+python-dotenv
+pydantic>=2
