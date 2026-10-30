@@ -129,11 +129,14 @@ All optional; see `.env.example`.
 
 ## GitHub Action
 
-Check your repo on every push. The report goes to the job summary.
+Check your repo on every push and pull request. The report goes to the job summary, and on a pull request it's posted as one comment that's updated in place on every run.
 
 ```yaml
 name: ShipCheck
-on: [push, workflow_dispatch]
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+  pull-requests: write   # for the PR comment
 jobs:
   shipcheck:
     runs-on: ubuntu-latest
@@ -149,11 +152,12 @@ jobs:
 |---|---|---|
 | `hackathon-url` | required | Devpost page of the hackathon |
 | `repo` | this repo | Repo URL to check |
-| `ref` | `github.sha` | Commit to check |
+| `ref` | PR head commit, else `github.sha` | Commit to check |
 | `fail-on` | `fail` | `fail`, `unclear` (also fails on unclear) or `never` |
 | `nebius-api-key` | required | Nebius Token Factory key |
 | `tavily-api-key` | none | Only needed for hackathons whose rules are not bundled in `examples/rules/` (the Nebius hackathon is bundled) |
-| `github-token` | `github.token` | Reads the repo |
+| `github-token` | `github.token` | Reads the repo and comments on PRs |
+| `comment-on-pr` | `true` | Post the report as a PR comment on `pull_request` events. PRs from forks get a read-only token, so the job warns instead of commenting. |
 
 Outputs: `pass`, `fail`, `unclear` (counts) and `report-path` (Markdown file on the runner).
 

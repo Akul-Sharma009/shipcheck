@@ -8,8 +8,8 @@ inputs:
     description: Repo URL to check.
     default: ${{ github.server_url }}/${{ github.repository }}
   ref:
-    description: Commit SHA to check.
-    default: ${{ github.sha }}
+    description: Commit SHA to check (on pull requests, the PR's head commit).
+    default: ${{ github.event.pull_request.head.sha || github.sha }}
   fail-on:
     description: "Fail the job on: fail (default), unclear (fail or unclear), never."
     default: fail
@@ -21,8 +21,11 @@ inputs:
     required: false
     default: ""
   github-token:
-    description: Token used to read the repo.
+    description: Token used to read the repo, and to comment on pull requests.
     default: ${{ github.token }}
+  comment-on-pr:
+    description: "On pull_request events, post the report as a PR comment, updated in place on each run (true/false). Needs permissions: pull-requests: write."
+    default: "true"
 outputs:
   pass:
     description: Number of requirements that pass.
@@ -65,3 +68,18 @@ runs:
         code=$?
         [ -f "$REPORT" ] && cat "$REPORT" >> "$GITHUB_STEP_SUMMARY"
         exit $code
+    - name: Comment on the pull request
+      if: always() && github.event_name == 'pull_request' && inputs.comment-on-pr == 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        PR: ${{ github.event.pull_request.number }}
+        REPO: ${{ github.repository }}
+        REPORT: ${{ steps.check.outputs.report-path }}
+      run: |
+        if [ -z "$REPORT" ] || [ ! -f "$REPORT" ]; then
+          echo "::warning::No ShipCheck report to comment with"; exit 0
+        fi
+        # A fork's PR gets a read-only token: warn instead of failing the job.
+        "${{ github.action_path }}/scripts/pr_comment.sh" "$REPORT" "$PR" "$REPO" \
+          || echo "::warning::Couldn't comment on the PR (the token needs pull-requests: write; forks get read-only tokens)"
