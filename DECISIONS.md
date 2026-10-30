@@ -21,10 +21,10 @@ Decision: as defined in GUARDRAILS.md.
 Evidence: it's the simplest thing a non-expert would build.
 Revisit if: it scores about the same as ShipCheck. That would mean the LLM adds little.
 
-## Core approach: deterministic checks + Nemotron routing (Nano/Super/Ultra)
-Status: ASSUMED
+## Core approach: deterministic checks + Nemotron routing (Nano/Super, Ultra cut)
+Status: TESTED (small sample)
 Decision: as specified in BRIEF.md §6.
-Evidence: none yet. The head-to-head at ~10:15 PM tests it against the baseline and a single-chatbot-call incumbent on about 3 labeled repos.
+Evidence: eval/RESULTS.md, 30 Oct. 4 real entries, 28 blind labels (6 fails). ShipCheck: 100% accuracy, 0% false passes. A single Super call: 89% (96% if given GitHub's license field). Keyword baseline: 82% with a 17% false-pass rate (a truncated MIT license).
 Revisit if: the single-call incumbent matches it on false-pass rate.
 
 ## Structured output: prompt-based JSON + Pydantic validation + one retry
@@ -124,6 +124,6 @@ Revisit if: everything else is done before 11 PM.
     - GitHub's own license detection and repo facts (visibility, commit dates vs the event window)
     - per-event Devpost rules parsing that marks each item deterministic, LLM-judged or not checkable
     - any accuracy measured on a labeled set
-- Which real gallery repo is the unbiased ground-truth case? For the eval, freeze one Rules extraction and score every method against that same requirement list.
+- Ground truth (resolved 30 Oct): 3 never-seen entries plus tradeflow, labeled blind by an Opus agent. The user hasn't spot-checked the labels.
 - The brief's `Rules` schema has no `submission_start`, so "commits within submission period" needs it added. If it's absent, the check is unclear.
 - Token Factory has no spend cap (user checked 30 Oct). The kill switch and daily cap are the only controls.

@@ -1,0 +1,154 @@
+{
+ "ShipCheck": {
+  "Udayasaran-kumar/nebius-docpilot": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "emirakbarov/nebius-nvidia-hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "fail",
+   "R7": "fail",
+   "R8": "fail",
+   "R9": "fail"
+  },
+  "DhruvPatel0110/NexusFlow-NvidiaNebius-Hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "Fu93/tradeflow-ai": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  }
+ },
+ "Keyword baseline": {
+  "Udayasaran-kumar/nebius-docpilot": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "unclear",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "emirakbarov/nebius-nvidia-hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "unclear",
+   "R7": "fail",
+   "R8": "fail",
+   "R9": "fail"
+  },
+  "DhruvPatel0110/NexusFlow-NvidiaNebius-Hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "unclear",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "Fu93/tradeflow-ai": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "unclear",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  }
+ },
+ "One model call": {
+  "Udayasaran-kumar/nebius-docpilot": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "emirakbarov/nebius-nvidia-hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "fail",
+   "R7": "fail",
+   "R8": "fail",
+   "R9": "fail"
+  },
+  "DhruvPatel0110/NexusFlow-NvidiaNebius-Hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "fail",
+   "R8": "fail",
+   "R9": "pass"
+  },
+  "Fu93/tradeflow-ai": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "pass",
+   "R8": "pass",
+   "R9": "pass"
+  }
+ },
+ "One model call (no license field)": {
+  "Udayasaran-kumar/nebius-docpilot": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "pass"
+  },
+  "emirakbarov/nebius-nvidia-hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "fail",
+   "R7": "fail",
+   "R8": "fail",
+   "R9": "fail"
+  },
+  "DhruvPatel0110/NexusFlow-NvidiaNebius-Hackathon": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "fail",
+   "R7": "fail",
+   "R8": "fail",
+   "R9": "pass"
+  },
+  "Fu93/tradeflow-ai": {
+   "R1": "pass",
+   "R2": "pass",
+   "R5": "pass",
+   "R6": "pass",
+   "R7": "fail",
+   "R8": "pass",
+   "R9": "pass"
+  }
+ }
+}

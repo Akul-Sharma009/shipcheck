@@ -131,10 +131,22 @@ All optional; see `.env.example`.
 - **Read-only.** ShipCheck reads code and never executes it. Private repos are refused before anything is read. An expired GitHub token falls back to unauthenticated access.
 - **Secrets.** Keys come from Streamlit secrets or `.env`, which is never committed.
 
+## Evaluation
+
+We ran a head-to-head on 4 real entries to this hackathon, pinned to a commit each. It covers 28 requirement labels (6 true fails), from a blind independent reviewer. Details and caveats are in [eval/RESULTS.md](eval/RESULTS.md).
+
+| Method | Accuracy | False-pass rate |
+|---|---|---|
+| **ShipCheck** | **100%** (28/28) | **0%** |
+| One Nemotron Super call with the whole repo pasted in | 89% | 0% |
+| Keyword check ("is there a LICENSE file?") | 82% | 17% |
+
+The keyword check's false pass was a real entry with a truncated MIT license. GitHub doesn't detect it, so the rules count it as unlicensed. The sample is small, so read it as "at least as good, with fewer errors", not as a precise accuracy figure.
+
 ## Limitations
 
 - **Public GitHub repos and Devpost hackathons only.** Other platforms work if you paste the rules text.
-- **AI verdicts can be wrong.** They are constrained to cite evidence, but treat "unclear" as "go look". We haven't yet measured accuracy on a labeled set.
+- **AI verdicts can be wrong.** They are constrained to cite evidence, but treat "unclear" as "go look". The evaluation above is small (28 labels).
 - **Video checks cover the essentials only:** visibility and length. ShipCheck doesn't watch the content.
 - **Large repos:** at most 40 files (12K characters each) are read, prioritising files that name a platform or model.
 - **Sleeping demo:** the hosted demo runs on Streamlit Community Cloud, which sleeps after inactivity. If you see "This app has gone to sleep", click *Yes, get this app back up* and wait about 30 s.

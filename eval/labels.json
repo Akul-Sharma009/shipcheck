@@ -1,0 +1,38 @@
+{
+ "Udayasaran-kumar/nebius-docpilot": {
+  "R1": {"label": "pass", "confidence": "high", "evidence": "backend/src/index.ts:106-110 OpenAI client baseURL https://api.tokenfactory.nebius.com/v1/"},
+  "R2": {"label": "pass", "confidence": "high", "evidence": "render.yaml NEBIUS_MODEL=nvidia/Nemotron-3_5-Lightning; index.ts:114 model: process.env.NEBIUS_MODEL"},
+  "R5": {"label": "pass", "confidence": "high", "evidence": "repo visibility public"},
+  "R6": {"label": "pass", "confidence": "high", "evidence": "Express backend + React frontend source; README local setup steps"},
+  "R7": {"label": "fail", "confidence": "high", "evidence": "GitHub license spdx_id NOASSERTION (LICENSE file is truncated MIT, missing liability clause)"},
+  "R8": {"label": "pass", "confidence": "high", "evidence": "README 'Local setup' with npm install / npm run dev for backend and frontend"},
+  "R9": {"label": "pass", "confidence": "low", "evidence": "README: 'Use NVIDIA Nemotron through Nebius Token Factory', Architecture line, AI inference: Nebius Token Factory; brief, no explicit 'acceleration' explanation"}
+ },
+ "emirakbarov/nebius-nvidia-hackathon": {
+  "R1": {"label": "pass", "confidence": "high", "evidence": "pipeline.py:16-19 OpenAI base_url https://api.tokenfactory.nebius.com/v1/"},
+  "R2": {"label": "pass", "confidence": "high", "evidence": "pipeline.py:24,61 model nvidia/nemotron-3-super-120b-a12b; transcribe.py NVIDIA Riva/Parakeet ASR"},
+  "R5": {"label": "pass", "confidence": "high", "evidence": "repo visibility public"},
+  "R6": {"label": "fail", "confidence": "high", "evidence": "Real Streamlit source present but no README or any run instructions in repo"},
+  "R7": {"label": "fail", "confidence": "high", "evidence": "GitHub license null; no LICENSE file"},
+  "R8": {"label": "fail", "confidence": "high", "evidence": "No README (/readme returns 404)"},
+  "R9": {"label": "fail", "confidence": "high", "evidence": "No README"}
+ },
+ "DhruvPatel0110/NexusFlow-NvidiaNebius-Hackathon": {
+  "R1": {"label": "pass", "confidence": "high", "evidence": "backend/config.py:32-33 NEBIUS_BASE_URL default api.tokenfactory.nebius.com/v1; backend/nebius_client.py:71 POST {base_url}/chat/completions"},
+  "R2": {"label": "pass", "confidence": "high", "evidence": "backend/config.py:35-36 NEBIUS_MODEL default nvidia/nemotron-3-super-120b-a12b, used by NebiusNemotronClient in rag_service.py"},
+  "R5": {"label": "pass", "confidence": "high", "evidence": "repo visibility public"},
+  "R6": {"label": "pass", "confidence": "high", "evidence": "FastAPI backend + React frontend source; README Quickstart & Setup Guide"},
+  "R7": {"label": "fail", "confidence": "high", "evidence": "GitHub license null; no LICENSE file in tree"},
+  "R8": {"label": "pass", "confidence": "high", "evidence": "README.md:267-334 Quickstart: pip install -r req.txt, python run.py, npm install, npm run dev"},
+  "R9": {"label": "pass", "confidence": "high", "evidence": "README.md:98-104 'NVIDIA & Nebius Integration' section: Nemotron 120B Super usage and Nebius Token Factory inference"}
+ },
+ "Fu93/tradeflow-ai": {
+  "R1": {"label": "pass", "confidence": "high", "evidence": "src/config/heuristics.py:519 EXTRACTOR_BASE_URL api.tokenfactory.nebius.com/v1, used in src/desk/extract.py and src/engine/llm_config.py:nebius_endpoint"},
+  "R2": {"label": "pass", "confidence": "high", "evidence": "src/config/heuristics.py:526 EXTRACTOR_MODEL nvidia/nemotron-3-super-120b-a12b"},
+  "R5": {"label": "pass", "confidence": "high", "evidence": "repo visibility public"},
+  "R6": {"label": "pass", "confidence": "high", "evidence": "Full src/ (140 py files), Dockerfile, docker-compose; README Quick start"},
+  "R7": {"label": "pass", "confidence": "high", "evidence": "GitHub license spdx_id MIT"},
+  "R8": {"label": "pass", "confidence": "high", "evidence": "README.md:146-163 Quick start (Docker): docker compose up --build; pip install -r requirements.txt"},
+  "R9": {"label": "pass", "confidence": "high", "evidence": "README.md:55-67 'How this project uses Nebius, NVIDIA and Tavily' table"}
+ }
+}
